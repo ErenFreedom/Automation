@@ -59,7 +59,7 @@ const ClientOtpLoginPage = () => {
 
       const { token } = response.data;
       localStorage.setItem('authToken', token);
-      navigate(`/client-dashboard/${userId}`);
+      navigate(`/client-dashboard/${userId}`); // Navigate to the client dashboard after successful verification
     } catch (error) {
       console.error('Error verifying OTP:', error.response?.data || error.message);
       setError(error.response?.data || 'Invalid or expired OTP');
