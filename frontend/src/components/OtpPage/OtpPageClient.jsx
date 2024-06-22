@@ -58,7 +58,7 @@ const OtpPageClient = () => {
         }
       );
       console.log('OTP verified successfully:', response.data);
-      window.location.href = '/client-dashboard';
+      navigate('/login-client'); // Navigate to the client login page after successful verification
     } catch (error) {
       console.error('Error verifying OTP:', error);
       setError('Invalid or expired OTP');
