@@ -125,23 +125,37 @@ exports.loginClient = (req, res) => {
 // Verify OTP and complete login
 exports.verifyClientLogin = async (req, res) => {
     const { email, otp } = req.body;
+
+    console.log(`Verifying OTP for client login`);
+    console.log(`Email: ${email}, OTP: ${otp}`);
+    
+    if (!email || !otp) {
+        console.error('Email or OTP not provided');
+        return res.status(400).send('Email and OTP are required.');
+    }
+
     const query = 'SELECT * FROM clients WHERE email = ?';
     db.query(query, [email], (err, results) => {
         if (err || results.length === 0) {
+            console.error(`Invalid identifier for email: ${email}`);
             return res.status(400).send('Invalid identifier.');
         }
 
         const user = results[0];
+        console.log(`Found user: ${JSON.stringify(user)}`);
+
         const checkOtpQuery = 'SELECT * FROM otps WHERE email = ? AND otp = ?';
         db.query(checkOtpQuery, [email, otp], (err, results) => {
             if (err || results.length === 0) {
-                console.error(`Invalid or expired OTP for email ${email}`);
+                console.error(`Invalid or expired OTP for email: ${email}`);
                 return res.status(400).send('Invalid or expired OTP.');
             }
 
             const otpData = results[0];
+            console.log(`Found OTP data: ${JSON.stringify(otpData)}`);
+
             if (new Date() > new Date(otpData.expires_at)) {
-                console.error(`Expired OTP for email ${email}`);
+                console.error(`Expired OTP for email: ${email}`);
                 return res.status(400).send('Invalid or expired OTP.');
             }
 
