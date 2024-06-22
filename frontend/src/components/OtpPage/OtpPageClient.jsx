@@ -12,7 +12,8 @@ const OtpPageClient = () => {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
-  const userId = new URLSearchParams(location.search).get('userId');
+  const email = location.state?.email;
+  const userId = location.state?.userId;
 
   useEffect(() => {
     document.body.classList.add('otp-page-body');
@@ -46,11 +47,10 @@ const OtpPageClient = () => {
   };
 
   const handleVerify = async () => {
-    const token = localStorage.getItem('authToken');
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/verify-client-registration`,
-        { otp: otp.join('') },
+        { email, otp: otp.join('') }, // Ensure email is included in the request
         {
           headers: {
             Authorization: `Bearer ${token}`,

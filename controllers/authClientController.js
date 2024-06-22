@@ -45,6 +45,7 @@ exports.registerClient = async (req, res) => {
 };
 
 // Verify OTP and complete client registration
+// Verify OTP and complete client registration
 exports.verifyClientRegistration = async (req, res) => {
     const { email, otp } = req.body;
     console.log(`Verifying OTP for registration`);
@@ -82,6 +83,7 @@ exports.verifyClientRegistration = async (req, res) => {
         });
     });
 };
+
 
 // Login client
 exports.loginClient = (req, res) => {
