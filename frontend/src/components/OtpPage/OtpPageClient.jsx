@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import './OtpPage.css';
+import './otpPageClient.css';
 import logo from '../../assets/logo.png';
 import otpImage from '../../assets/otpimage.png';
 
-const OtpPage = () => {
-  const [otp, setOtp] = useState(new Array(6).fill(""));
-  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes in seconds
+const OtpPageClient = () => {
+  const [otp, setOtp] = useState(new Array(6).fill(''));
+  const [timeLeft, setTimeLeft] = useState(120);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const location = useLocation();
   const navigate = useNavigate();
-  const email = location.state?.email;
-  const otpType = location.state?.otpType; // Get otpType from location state
+  const location = useLocation();
+  const userId = new URLSearchParams(location.search).get('userId');
 
   useEffect(() => {
     document.body.classList.add('otp-page-body');
@@ -42,20 +41,27 @@ const OtpPage = () => {
 
   const handleResend = () => {
     setTimeLeft(120);
-    setOtp(new Array(6).fill(""));
-    // Add resend OTP logic here
+    setOtp(new Array(6).fill(''));
+    // Add resend OTP logic here if needed
   };
 
   const handleVerify = async () => {
+    const token = localStorage.getItem('authToken');
     try {
-      // Use the correct endpoint based on otpType
-      const url = `${process.env.REACT_APP_API_URL}/verify-staff-registration`;
-
-      const response = await axios.post(url, { email, otp: otp.join('') });
-      setMessage(response.data);
-      navigate('/login');
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/verify-client-registration`,
+        { otp: otp.join('') },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log('OTP verified successfully:', response.data);
+      window.location.href = '/client-dashboard';
     } catch (error) {
-      setError(error.response?.data || 'Invalid or expired OTP');
+      console.error('Error verifying OTP:', error);
+      setError('Invalid or expired OTP');
     }
   };
 
@@ -91,7 +97,9 @@ const OtpPage = () => {
             Resend OTP
           </p>
         )}
-        <button type="button" className="verify-button" onClick={handleVerify}>VERIFY</button>
+        <button type="button" className="verify-button" onClick={handleVerify}>
+          VERIFY
+        </button>
         {error && <p className="error">{error}</p>}
         {message && <p className="message">{message}</p>}
       </div>
@@ -99,4 +107,4 @@ const OtpPage = () => {
   );
 };
 
-export default OtpPage;
+export default OtpPageClient;

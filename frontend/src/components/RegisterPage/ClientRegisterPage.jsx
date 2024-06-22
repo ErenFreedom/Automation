@@ -3,13 +3,13 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import 'react-phone-input-2/lib/style.css';
 import PhoneInput from 'react-phone-input-2';
-import './RegisterPage.css';
+import './ClientRegisterPage.css';
 import logo from '../../assets/logo.png';
 import firstImage from '../../assets/image1.jpg';
 import secondImage from '../../assets/image2.jpg';
 import thirdImage from '../../assets/image3.jpg';
 
-const RegisterPage = () => {
+const ClientRegisterPage = () => {
   const images = [firstImage, secondImage, thirdImage];
   const [currentImage, setCurrentImage] = useState(0);
   const [formData, setFormData] = useState({
@@ -20,7 +20,6 @@ const RegisterPage = () => {
     gender: '',
     age: '',
     phoneNumber: '',
-    department: '',
     country: ''
   });
   const [error, setError] = useState('');
@@ -58,9 +57,9 @@ const RegisterPage = () => {
     setError('');
     setMessage('');
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/register-staff`, formData);
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/register-client`, formData);
       setMessage(response.data);
-      navigate('/otp', { state: { email: formData.email } }); // Navigate to the OTP page on successful registration
+      navigate('/otp-client', { state: { email: formData.email } }); // Navigate to the OTP page on successful registration
     } catch (error) {
       setError(error.response?.data || 'An error occurred');
     }
@@ -124,16 +123,6 @@ const RegisterPage = () => {
                 }}
               />
             </label>
-            <label>
-              Department
-              <select name="department" value={formData.department} onChange={handleChange} required className="styled-select">
-                <option value="">Select your department</option>
-                <option value="temperature">Temperature</option>
-                <option value="pressure">Pressure</option>
-                <option value="humidity">Humidity</option>
-                <option value="rh">RH</option>
-              </select>
-            </label>
             <button type="submit">Create</button>
           </form>
           {error && <p className="error">{error}</p>}
@@ -150,4 +139,4 @@ const RegisterPage = () => {
   );
 };
 
-export default RegisterPage;
+export default ClientRegisterPage;

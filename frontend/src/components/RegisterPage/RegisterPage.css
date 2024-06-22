@@ -130,6 +130,22 @@ body.register-page-body .slideshow-image {
   border-radius: 10px;
 }
 
+body.register-page-body .register-form .styled-select {
+  padding: 12px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  width: calc(100% - 24px);
+  background-color: white;
+  appearance: none; /* For removing default arrow in some browsers */
+}
+
+body.register-page-body .register-form .styled-select:focus {
+  outline: none;
+  border-color: #61dafb;
+}
+
 /* Media queries for smaller screens */
 
 /* For laptops */

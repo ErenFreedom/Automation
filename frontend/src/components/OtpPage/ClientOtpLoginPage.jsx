@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import './OtpPage.css';
+import './otpLoginPage.css'; // Using the same CSS as OtpLoginPage
 import logo from '../../assets/logo.png';
 import otpImage from '../../assets/otpimage.png';
 
-const OtpPage = () => {
+const ClientOtpLoginPage = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const [timeLeft, setTimeLeft] = useState(120); // 2 minutes in seconds
   const [error, setError] = useState('');
@@ -13,7 +13,7 @@ const OtpPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const email = location.state?.email;
-  const otpType = location.state?.otpType; // Get otpType from location state
+  const userId = location.state?.userId;
 
   useEffect(() => {
     document.body.classList.add('otp-page-body');
@@ -48,13 +48,20 @@ const OtpPage = () => {
 
   const handleVerify = async () => {
     try {
-      // Use the correct endpoint based on otpType
-      const url = `${process.env.REACT_APP_API_URL}/verify-staff-registration`;
+      console.log(`Verifying OTP for client login`);
+      console.log(`Email: ${email}, OTP: ${otp.join('')}`);
+      const url = `${process.env.REACT_APP_API_URL}/verify-client-login`;
+
+      console.log(`URL: ${url}`);
 
       const response = await axios.post(url, { email, otp: otp.join('') });
-      setMessage(response.data);
-      navigate('/login');
+      console.log(`Response: ${JSON.stringify(response.data)}`);
+
+      const { token } = response.data;
+      localStorage.setItem('authToken', token);
+      navigate(`/client-dashboard/${userId}`);
     } catch (error) {
+      console.error('Error verifying OTP:', error.response?.data || error.message);
       setError(error.response?.data || 'Invalid or expired OTP');
     }
   };
@@ -99,4 +106,4 @@ const OtpPage = () => {
   );
 };
 
-export default OtpPage;
+export default ClientOtpLoginPage;

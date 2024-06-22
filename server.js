@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
@@ -14,6 +13,7 @@ const socket = require('./socket');
 const io = socket.init(server); // Initialize socket.io
 
 const authRoutes = require('./routes/authRoutes');
+const authClientRoutes = require('./routes/authClientRoutes');
 const dataRoutes = require('./routes/dataRoutes');
 const loggerRoutes = require('./routes/loggerRoutes');
 const latestDataRoutes = require('./routes/latestDataRoutes');
@@ -34,6 +34,7 @@ app.use(limiter);
 
 // Routes
 app.use('/api', authRoutes);
+app.use('/api', authClientRoutes);
 app.use('/api', dataRoutes); // Ensure this is protected with token verification
 app.use(loggerRoutes);
 app.use('/api', latestDataRoutes); // Adding the new route for latest data

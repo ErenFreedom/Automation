@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './LandingPage.css';
 import { FaGithub, FaInstagram, FaEnvelope } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
@@ -6,6 +6,25 @@ import logo from '../../assets/logo.png';
 import newGif from '../../assets/animated_image.gif'; // Update with the new GIF path
 
 const LandingPage = () => {
+  const [showRegisterDropdown, setShowRegisterDropdown] = useState(false);
+  const [showLoginDropdown, setShowLoginDropdown] = useState(false);
+
+  const handleRegisterMouseEnter = () => {
+    setShowRegisterDropdown(true);
+  };
+
+  const handleRegisterMouseLeave = () => {
+    setShowRegisterDropdown(false);
+  };
+
+  const handleLoginMouseEnter = () => {
+    setShowLoginDropdown(true);
+  };
+
+  const handleLoginMouseLeave = () => {
+    setShowLoginDropdown(false);
+  };
+
   return (
     <div className="landing-page">
       <header className="header">
@@ -14,12 +33,40 @@ const LandingPage = () => {
           <h1 className="app-name">IntelliMonitor</h1>
         </div>
         <div className="nav-buttons">
-          <Link to="/login"><button className="nav-button">Login</button>
-          </Link>
-          
-          <Link to="/register">
+          <div 
+            className="dropdown"
+            onMouseEnter={handleLoginMouseEnter}
+            onMouseLeave={handleLoginMouseLeave}
+          >
+            <button className="nav-button">Login</button>
+            {showLoginDropdown && (
+              <div className="dropdown-content">
+                <Link to="/login">
+                  <div className="dropdown-item">Login as Staff</div>
+                </Link>
+                <Link to="/login-client">
+                  <div className="dropdown-item">Login as Client</div>
+                </Link>
+              </div>
+            )}
+          </div>
+          <div 
+            className="dropdown"
+            onMouseEnter={handleRegisterMouseEnter}
+            onMouseLeave={handleRegisterMouseLeave}
+          >
             <button className="nav-button">Register</button>
-          </Link>
+            {showRegisterDropdown && (
+              <div className="dropdown-content">
+                <Link to="/register">
+                  <div className="dropdown-item">Register as Staff</div>
+                </Link>
+                <Link to="/register-client">
+                  <div className="dropdown-item">Register as Client</div>
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </header>
       <main className="main-content">

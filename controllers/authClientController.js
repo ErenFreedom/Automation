@@ -7,21 +7,21 @@ const { generateOTP, sendOTPEmail, decryptData } = require('../utils/otpGenerati
 
 const secretKey = process.env.SECRET_KEY;
 
-// Register a new staff member
-exports.registerStaff = async (req, res) => {
+// Register a new client
+exports.registerClient = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, username, password, name, gender, age, phoneNumber, department } = req.body;
+    const { email, username, password, name, gender, age, phoneNumber } = req.body;
     const decryptedPassword = decryptData(password);
 
-    const checkQuery = 'SELECT * FROM staff WHERE email = ? OR username = ?';
+    const checkQuery = 'SELECT * FROM clients WHERE email = ? OR username = ?';
     db.query(checkQuery, [email, username], async (err, results) => {
         if (err) {
-            console.error('Error checking staff member:', err);
-            return res.status(500).send('Error checking staff member');
+            console.error('Error checking client:', err);
+            return res.status(500).send('Error checking client');
         }
 
         if (results.length > 0) {
@@ -31,8 +31,8 @@ exports.registerStaff = async (req, res) => {
         const otp = generateOTP();
         const expiresAt = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes from now
 
-        const insertOtpQuery = 'INSERT INTO otps (email, otp, expires_at, password, username, name, gender, age, phoneNumber, department) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-        db.query(insertOtpQuery, [email, otp, expiresAt, decryptedPassword, username, name, gender, age, phoneNumber, department], async (err) => {
+        const insertOtpQuery = 'INSERT INTO otps (email, otp, expires_at, password, username, name, gender, age, phoneNumber) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        db.query(insertOtpQuery, [email, otp, expiresAt, decryptedPassword, username, name, gender, age, phoneNumber], async (err) => {
             if (err) {
                 console.error('Error storing OTP:', err);
                 return res.status(500).send('Error storing OTP');
@@ -44,8 +44,8 @@ exports.registerStaff = async (req, res) => {
     });
 };
 
-// Verify OTP and complete staff registration
-exports.verifyStaffRegistration = async (req, res) => {
+// Verify OTP and complete client registration
+exports.verifyClientRegistration = async (req, res) => {
     const { email, otp } = req.body;
     console.log(`Verifying OTP for registration`);
     console.log(`Email: ${email}, OTP: ${otp}`);
@@ -64,11 +64,11 @@ exports.verifyStaffRegistration = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(otpData.password, 10);
-        const query = 'INSERT INTO staff (email, username, password, name, gender, age, phoneNumber, department) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-        db.query(query, [email, otpData.username, hashedPassword, otpData.name, otpData.gender, otpData.age, otpData.phoneNumber, otpData.department], (err) => {
+        const query = 'INSERT INTO clients (email, username, password, name, gender, age, phoneNumber) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        db.query(query, [email, otpData.username, hashedPassword, otpData.name, otpData.gender, otpData.age, otpData.phoneNumber], (err) => {
             if (err) {
-                console.error('Error registering staff member:', err);
-                return res.status(500).send('Error registering staff member');
+                console.error('Error registering client:', err);
+                return res.status(500).send('Error registering client');
             }
 
             const deleteOtpQuery = 'DELETE FROM otps WHERE email = ?';
@@ -78,13 +78,13 @@ exports.verifyStaffRegistration = async (req, res) => {
                 }
             });
 
-            res.send('Staff member registered successfully');
+            res.send('Client registered successfully');
         });
     });
 };
 
-// Login user (staff or client)
-exports.login = (req, res) => {
+// Login client
+exports.loginClient = (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -93,7 +93,7 @@ exports.login = (req, res) => {
     const { identifier, password } = req.body; // identifier can be email or username
     const decryptedPassword = decryptData(password);
 
-    const query = 'SELECT * FROM staff WHERE email = ? OR username = ?';
+    const query = 'SELECT * FROM clients WHERE email = ? OR username = ?';
     db.query(query, [identifier, identifier], async (err, results) => {
         if (err || results.length === 0) {
             return res.status(401).send('Invalid credentials');
@@ -121,9 +121,9 @@ exports.login = (req, res) => {
 };
 
 // Verify OTP and complete login
-exports.verifyLogin = async (req, res) => {
+exports.verifyClientLogin = async (req, res) => {
     const { email, otp } = req.body;
-    const query = 'SELECT * FROM staff WHERE email = ?';
+    const query = 'SELECT * FROM clients WHERE email = ?';
     db.query(query, [email], (err, results) => {
         if (err || results.length === 0) {
             return res.status(400).send('Invalid identifier.');
