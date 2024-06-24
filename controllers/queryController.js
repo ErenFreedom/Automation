@@ -40,7 +40,7 @@ exports.raiseQuery = async (req, res) => {
         }
 
         // Fetch email addresses of department staff
-        const getEmailsQuery = 'SELECT email FROM staff WHERE department = ?';
+        const getEmailsQuery = 'SELECT email, phoneNumber FROM staff WHERE department = ?';
         db.query(getEmailsQuery, [department], (err, staffResults) => {
             if (err) {
                 console.error('Error fetching staff emails:', err);
@@ -59,42 +59,33 @@ exports.raiseQuery = async (req, res) => {
             transporter.sendMail(mailOptions, (err, info) => {
                 if (err) {
                     console.error('Error sending email:', err);
-                    return res.status(500).send('Error sending email');
+                } else {
+                    console.log('Email sent:', info.response);
                 }
-
-                console.log('Email sent:', info.response);
             });
 
             // Send SMS to department staff
-            const getStaffQuery = 'SELECT phoneNumber FROM staff WHERE department = ?';
-            db.query(getStaffQuery, [department], (err, staffResults) => {
-                if (err) {
-                    console.error('Error fetching staff phone numbers:', err);
-                    return res.status(500).send('Error fetching staff phone numbers');
+            staffResults.forEach(staff => {
+                const formattedPhoneNumber = formatPhoneNumber(staff.phoneNumber);
+                if (formattedPhoneNumber) {
+                    const params = {
+                        Message: `New query in department ${department}: ${subject}`,
+                        PhoneNumber: formattedPhoneNumber,
+                    };
+
+                    sns.publish(params, (err, data) => {
+                        if (err) {
+                            console.error('Error sending SMS:', err);
+                        } else {
+                            console.log('SMS sent:', data);
+                        }
+                    });
+                } else {
+                    console.error('Invalid phone number:', staff.phoneNumber);
                 }
-
-                staffResults.forEach(staff => {
-                    const formattedPhoneNumber = formatPhoneNumber(staff.phoneNumber);
-                    if (formattedPhoneNumber) {
-                        const params = {
-                            Message: `New query in department ${department}: ${subject}`,
-                            PhoneNumber: formattedPhoneNumber,
-                        };
-
-                        sns.publish(params, (err, data) => {
-                            if (err) {
-                                console.error('Error sending SMS:', err);
-                            } else {
-                                console.log('SMS sent:', data);
-                            }
-                        });
-                    } else {
-                        console.error('Invalid phone number:', staff.phoneNumber);
-                    }
-                });
-
-                res.status(200).send('Query raised successfully');
             });
+
+            res.status(200).send('Query raised successfully');
         });
     });
 };
