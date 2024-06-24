@@ -9,7 +9,7 @@ AWS.config.update({
     region: process.env.AWS_REGION,
 });
 
-const sns = new AWS.SNS();
+const pinpoint = new AWS.Pinpoint({ apiVersion: '2016-12-01' });
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -65,17 +65,28 @@ exports.raiseQuery = async (req, res) => {
                 }
 
                 staffResults.forEach(staff => {
-                    const phoneNumber = staff.phoneNumber.replace(/^(?!\+)/, '+');
                     const params = {
-                        Message: `New query in department ${department}: ${subject}`,
-                        PhoneNumber: phoneNumber,
+                        ApplicationId: process.env.PINPOINT_APPLICATION_ID,
+                        MessageRequest: {
+                            Addresses: {
+                                [staff.phoneNumber]: {
+                                    ChannelType: 'SMS'
+                                }
+                            },
+                            MessageConfiguration: {
+                                SMSMessage: {
+                                    Body: `New query in department ${department}: ${subject}`,
+                                    MessageType: 'TRANSACTIONAL'
+                                }
+                            }
+                        }
                     };
 
-                    sns.publish(params, (err, data) => {
+                    pinpoint.sendMessages(params, (err, data) => {
                         if (err) {
-                            console.error('Error sending SMS to', phoneNumber, ':', err);
+                            console.error('Error sending SMS:', err);
                         } else {
-                            console.log('SMS sent to', phoneNumber, ':', data);
+                            console.log('SMS sent:', data);
                         }
                     });
                 });
