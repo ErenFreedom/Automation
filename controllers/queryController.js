@@ -20,15 +20,12 @@ const transporter = nodemailer.createTransport({
 });
 
 exports.raiseQuery = async (req, res) => {
-    const { clientId, department, subject, message, image } = req.body;
+    const { clientEmail, department, subject, message, imageUrl } = req.body;
 
-    // Insert query into database
-    const insertQuery = 'INSERT INTO queries (client_id, department, subject, message, image, status) VALUES (?, ?, ?, ?, ?, ?)';
-    db.query(insertQuery, [clientId, department, subject, message, image, 'Received'], async (err, results) => {
-        if (err) {
-            console.error('Error inserting query:', err);
-            return res.status(500).send('Error raising query');
-        }
+    try {
+        // Insert query into database
+        const insertQuery = 'INSERT INTO queries (clientEmail, department, subject, message, imageUrl, status) VALUES (?, ?, ?, ?, ?, ?)';
+        await db.query(insertQuery, [clientEmail, department, subject, message, imageUrl, 'Received']);
 
         // Send email to department
         const departmentEmails = {
@@ -43,42 +40,33 @@ exports.raiseQuery = async (req, res) => {
             to: departmentEmails[department],
             subject: `New Query: ${subject}`,
             text: message,
-            attachments: image ? [{ path: image }] : [],
+            attachments: imageUrl ? [{ path: imageUrl }] : [],
         };
 
-        transporter.sendMail(mailOptions, (err, info) => {
-            if (err) {
-                console.error('Error sending email:', err);
-                return res.status(500).send('Error sending email');
-            }
-
-            console.log('Email sent:', info.response);
-        });
+        await transporter.sendMail(mailOptions);
 
         // Send SMS to department staff
         const getStaffQuery = 'SELECT phoneNumber FROM staff WHERE department = ?';
-        db.query(getStaffQuery, [department], (err, staffResults) => {
-            if (err) {
-                console.error('Error fetching staff phone numbers:', err);
-                return res.status(500).send('Error fetching staff phone numbers');
-            }
+        const [staffResults] = await db.query(getStaffQuery, [department]);
 
-            staffResults.forEach(staff => {
-                const params = {
-                    Message: `New query in department ${department}: ${subject}`,
-                    PhoneNumber: staff.phoneNumber,
-                };
+        staffResults.forEach(staff => {
+            const params = {
+                Message: `New query in department ${department}: ${subject} - ${message}`,
+                PhoneNumber: staff.phoneNumber,
+            };
 
-                sns.publish(params, (err, data) => {
-                    if (err) {
-                        console.error('Error sending SMS:', err);
-                    } else {
-                        console.log('SMS sent:', data);
-                    }
-                });
+            sns.publish(params, (err, data) => {
+                if (err) {
+                    console.error('Error sending SMS:', err);
+                } else {
+                    console.log('SMS sent:', data);
+                }
             });
-
-            res.status(200).send('Query raised successfully');
         });
-    });
+
+        res.status(200).send('Query raised successfully');
+    } catch (err) {
+        console.error('Error raising query:', err);
+        res.status(500).send('Error raising query');
+    }
 };
