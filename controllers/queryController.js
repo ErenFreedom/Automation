@@ -1,6 +1,5 @@
 const nodemailer = require('nodemailer');
 const AWS = require('aws-sdk');
-const { parsePhoneNumberFromString } = require('libphonenumber-js');
 const db = require('../config/db');
 require('dotenv').config();
 
@@ -20,14 +19,6 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-const formatPhoneNumber = (phoneNumber) => {
-    const phoneNumberObj = parsePhoneNumberFromString(phoneNumber);
-    if (phoneNumberObj && phoneNumberObj.isValid()) {
-        return phoneNumberObj.format('E.164');
-    }
-    return null;
-};
-
 exports.raiseQuery = async (req, res) => {
     const { clientEmail, department, subject, message, imageUrl } = req.body;
 
@@ -40,7 +31,7 @@ exports.raiseQuery = async (req, res) => {
         }
 
         // Fetch email addresses of department staff
-        const getEmailsQuery = 'SELECT email, phoneNumber FROM staff WHERE department = ?';
+        const getEmailsQuery = 'SELECT email FROM staff WHERE department = ?';
         db.query(getEmailsQuery, [department], (err, staffResults) => {
             if (err) {
                 console.error('Error fetching staff emails:', err);
@@ -59,33 +50,38 @@ exports.raiseQuery = async (req, res) => {
             transporter.sendMail(mailOptions, (err, info) => {
                 if (err) {
                     console.error('Error sending email:', err);
-                } else {
-                    console.log('Email sent:', info.response);
+                    return res.status(500).send('Error sending email');
                 }
+
+                console.log('Email sent:', info.response);
             });
 
             // Send SMS to department staff
-            staffResults.forEach(staff => {
-                const formattedPhoneNumber = formatPhoneNumber(staff.phoneNumber);
-                if (formattedPhoneNumber) {
+            const getStaffQuery = 'SELECT phoneNumber FROM staff WHERE department = ?';
+            db.query(getStaffQuery, [department], (err, staffResults) => {
+                if (err) {
+                    console.error('Error fetching staff phone numbers:', err);
+                    return res.status(500).send('Error fetching staff phone numbers');
+                }
+
+                staffResults.forEach(staff => {
+                    const phoneNumber = staff.phoneNumber.replace(/^(?!\+)/, '+');
                     const params = {
                         Message: `New query in department ${department}: ${subject}`,
-                        PhoneNumber: formattedPhoneNumber,
+                        PhoneNumber: phoneNumber,
                     };
 
                     sns.publish(params, (err, data) => {
                         if (err) {
-                            console.error('Error sending SMS:', err);
+                            console.error('Error sending SMS to', phoneNumber, ':', err);
                         } else {
-                            console.log('SMS sent:', data);
+                            console.log('SMS sent to', phoneNumber, ':', data);
                         }
                     });
-                } else {
-                    console.error('Invalid phone number:', staff.phoneNumber);
-                }
-            });
+                });
 
-            res.status(200).send('Query raised successfully');
+                res.status(200).send('Query raised successfully');
+            });
         });
     });
 };
