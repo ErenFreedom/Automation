@@ -23,12 +23,23 @@ exports.raiseQuery = async (req, res) => {
     const { clientEmail, department, subject, message, imageUrl } = req.body;
 
     // Insert query into database
-    const insertQuery = 'INSERT INTO queries (clientEmail, department, subject, message, imageUrl, status) VALUES (?, ?, ?, ?, ?, ?)';
-    db.query(insertQuery, [clientEmail, department, subject, message, imageUrl, 'Received'], async (err, results) => {
+    const insertQuery = 'INSERT INTO queries (clientEmail, department, subject, message, imageUrl) VALUES (?, ?, ?, ?, ?)';
+    db.query(insertQuery, [clientEmail, department, subject, message, imageUrl], async (err, results) => {
         if (err) {
             console.error('Error inserting query:', err);
             return res.status(500).send('Error raising query');
         }
+
+        const queryId = results.insertId;
+
+        // Insert initial status into query_status table
+        const insertStatusQuery = 'INSERT INTO query_status (query_id, status) VALUES (?, ?)';
+        db.query(insertStatusQuery, [queryId, 'Received'], (err) => {
+            if (err) {
+                console.error('Error inserting query status:', err);
+                return res.status(500).send('Error raising query');
+            }
+        });
 
         // Fetch email addresses of department staff
         const getEmailsQuery = 'SELECT email FROM staff WHERE department = ?';
