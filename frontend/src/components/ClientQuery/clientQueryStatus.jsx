@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import './ClientQueryStatus.css'; // Create this file for styling
+import './clientQueryStatus.css'; // Create this file for styling
 
 const ClientQueryStatus = () => {
   const { userId } = useParams();
