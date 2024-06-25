@@ -19,6 +19,9 @@ import Humidity from './components/ConfigTabs/Humidity';
 import Report from './components/report/Report';
 import Account from './components/account/Account';
 import Notifications from './components/notifications/Notifications'; 
+import RaiseQuery from './components/ClientQuery/RaiseQuery'; // Import RaiseQuery
+import ClientQueryStatus from './components/ClientQuery/ClientQueryStatus'; // Import ClientQueryStatus
+import StaffQueryView from './components/StaffQuery/StaffQueryView'; // Import StaffQueryView
 
 function App() {
   return (
@@ -43,6 +46,9 @@ function App() {
         <Route path="/report/:userId" element={<Report />} />
         <Route path="/edit-account/:userId" element={<Account />} />
         <Route path="/notifications" element={<Notifications />} /> 
+        <Route path="/raise-query/:userId" element={<RaiseQuery />} /> {/* Add route for RaiseQuery */}
+        <Route path="/query-status/:userId" element={<ClientQueryStatus />} /> {/* Add route for ClientQueryStatus */}
+        <Route path="/staff-queries/:userId" element={<StaffQueryView />} /> {/* Add route for StaffQueryView */}
       </Routes>
     </Router>
   );

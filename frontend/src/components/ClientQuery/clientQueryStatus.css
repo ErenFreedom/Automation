@@ -1,0 +1,26 @@
+.client-query-status-container {
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.queries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.query-item {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+}
+
+.query-item h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.query-item p {
+  margin: 5px 0;
+}
