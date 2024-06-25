@@ -20,7 +20,7 @@ import Report from './components/report/Report';
 import Account from './components/account/Account';
 import Notifications from './components/notifications/Notifications'; 
 import RaiseQuery from './components/ClientQuery/RaiseQuery'; // Import RaiseQuery
-import ClientQueryStatus from './components/ClientQuery/ClientQueryStatus'; // Import ClientQueryStatus
+import ClientQueryStatus from './components/ClientQuery/clientQueryStatus'; // Import ClientQueryStatus
 import StaffQueryView from './components/StaffQuery/StaffQueryView'; // Import StaffQueryView
 
 function App() {
