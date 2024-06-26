@@ -5,6 +5,9 @@ import './StaffQueryView.css';
 const QueryDetailsModal = ({ queryDetails, onClose }) => {
   if (!queryDetails) return null;
 
+  // Construct Gmail search URL using the subject or another unique identifier
+  const gmailSearchUrl = `https://mail.google.com/mail/u/0/#search/${encodeURIComponent(queryDetails.subject)}`;
+
   return (
     <div className="modal-overlay">
       <div className="modal-content">
@@ -15,9 +18,10 @@ const QueryDetailsModal = ({ queryDetails, onClose }) => {
         {queryDetails.imageUrl && (
           <div>
             <strong>Attached Image:</strong>
-            <img src={`${process.env.REACT_APP_API_URL}/${queryDetails.imageUrl}`} alt="Attached" />
+            <img src={queryDetails.imageUrl} alt="Attached" />
           </div>
         )}
+        <a href={gmailSearchUrl} target="_blank" rel="noopener noreferrer">Open in Gmail</a>
         <button onClick={onClose}>Close</button>
       </div>
     </div>
@@ -68,7 +72,7 @@ const StaffQueryView = () => {
     fetchQueries();
   }, [department]);
 
-  const handleView = async (queryId, uniqueId) => {
+  const handleView = async (queryId) => {
     const token = localStorage.getItem('authToken');
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/query-details/${queryId}`, {
@@ -86,9 +90,6 @@ const StaffQueryView = () => {
 
       setQueries(queries.map(q => q.id === queryId ? { ...q, status: 'Pending' } : q));
       setSelectedQuery(response.data);
-
-      // Open Gmail with search query for the unique identifier
-      window.open(`https://mail.google.com/mail/u/0/#search/${uniqueId}`, '_blank');
     } catch (error) {
       console.error('Error fetching query details:', error);
     }
@@ -121,7 +122,7 @@ const StaffQueryView = () => {
           <p>{query.message}</p>
           <p>Status: {query.status}</p>
           {query.status === 'Received' && (
-            <button onClick={() => handleView(query.id, query.uniqueId)}>View</button>
+            <button onClick={() => handleView(query.id)}>View</button>
           )}
           {query.status === 'Pending' && (
             <button onClick={() => handleClose(query.id)}>Close Call</button>
