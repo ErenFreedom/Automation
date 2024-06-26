@@ -1,91 +1,111 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useParams } from 'react-router-dom';
-import './RaiseQuery.css'; // Create this file for styling
+const nodemailer = require('nodemailer');
+const AWS = require('aws-sdk');
+const db = require('../config/db');
+const { v4: uuidv4 } = require('uuid'); // Import uuid for generating unique identifier
+require('dotenv').config();
 
-const RaiseQuery = () => {
-  const { userId } = useParams();
-  const [clientEmail, setClientEmail] = useState('');
-  const [department, setDepartment] = useState('');
-  const [subject, setSubject] = useState('');
-  const [message, setMessage] = useState('');
-  const [image, setImage] = useState(null);
+AWS.config.update({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: process.env.AWS_REGION,
+});
 
-  useEffect(() => {
-    const fetchClientData = async () => {
-      const token = localStorage.getItem('authToken');
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/client-details`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+const pinpoint = new AWS.Pinpoint({ apiVersion: '2016-12-01' });
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
+
+exports.raiseQuery = async (req, res) => {
+    const { clientEmail, department, subject, message, imageUrl } = req.body;
+    const uniqueId = uuidv4(); // Generate unique identifier
+
+    // Insert query into database
+    const insertQuery = 'INSERT INTO queries (clientEmail, department, subject, message, imageUrl, uniqueId) VALUES (?, ?, ?, ?, ?, ?)';
+    db.query(insertQuery, [clientEmail, department, subject, message, imageUrl, uniqueId], async (err, results) => {
+        if (err) {
+            console.error('Error inserting query:', err);
+            return res.status(500).send('Error raising query');
+        }
+
+        const queryId = results.insertId;
+
+        // Insert initial status into query_status table
+        const insertStatusQuery = 'INSERT INTO query_status (query_id, status) VALUES (?, ?)';
+        db.query(insertStatusQuery, [queryId, 'Received'], (err) => {
+            if (err) {
+                console.error('Error inserting query status:', err);
+                return res.status(500).send('Error raising query');
+            }
         });
-        setClientEmail(response.data.email); // Assuming the response contains the client's email
-      } catch (error) {
-        console.error('Error fetching client data:', error);
-        alert('Failed to fetch client data');
-      }
-    };
 
-    fetchClientData();
-  }, []);
+        // Fetch email addresses of department staff
+        const getEmailsQuery = 'SELECT email FROM staff WHERE department = ?';
+        db.query(getEmailsQuery, [department], (err, staffResults) => {
+            if (err) {
+                console.error('Error fetching staff emails:', err);
+                return res.status(500).send('Error fetching staff emails');
+            }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem('authToken');
-    const formData = new FormData();
-    formData.append('clientEmail', clientEmail);
-    formData.append('department', department);
-    formData.append('subject', subject);
-    formData.append('message', message);
-    if (image) {
-      formData.append('image', image);
-    }
+            const emailAddresses = staffResults.map(staff => staff.email);
+            const mailOptions = {
+                from: process.env.EMAIL_USER,
+                to: emailAddresses, // Send to all fetched email addresses
+                subject: `New Query: ${subject} [ID: ${uniqueId}]`,
+                text: `${message}\n\nQuery ID: ${uniqueId}`,
+                attachments: imageUrl ? [{ path: imageUrl }] : [],
+            };
 
-    try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/raise-query`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      alert('Query raised successfully');
-    } catch (error) {
-      console.error('Error raising query:', error);
-      alert('Failed to raise query');
-    }
-  };
+            transporter.sendMail(mailOptions, (err, info) => {
+                if (err) {
+                    console.error('Error sending email:', err);
+                    return res.status(500).send('Error sending email');
+                }
 
-  return (
-    <div className="raise-query-container">
-      <h2>Raise a Query</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Department:</label>
-          <select value={department} onChange={(e) => setDepartment(e.target.value)}>
-            <option value="">Select Department</option>
-            <option value="temperature">Temperature</option>
-            <option value="pressure">Pressure</option>
-            <option value="humidity">Humidity</option>
-            <option value="rh">RH</option>
-          </select>
-        </div>
-        <div>
-          <label>Subject:</label>
-          <input type="text" value={subject} onChange={(e) => setSubject(e.target.value)} />
-        </div>
-        <div>
-          <label>Message:</label>
-          <textarea value={message} onChange={(e) => setMessage(e.target.value)}></textarea>
-        </div>
-        <div>
-          <label>Image:</label>
-          <input type="file" onChange={(e) => setImage(e.target.files[0])} />
-        </div>
-        <button type="submit">Submit</button>
-      </form>
-    </div>
-  );
+                console.log('Email sent:', info.response);
+            });
+
+            // Send SMS to department staff
+            const getStaffQuery = 'SELECT phoneNumber FROM staff WHERE department = ?';
+            db.query(getStaffQuery, [department], (err, staffResults) => {
+                if (err) {
+                    console.error('Error fetching staff phone numbers:', err);
+                    return res.status(500).send('Error fetching staff phone numbers');
+                }
+
+                staffResults.forEach(staff => {
+                    const params = {
+                        ApplicationId: process.env.PINPOINT_APPLICATION_ID,
+                        MessageRequest: {
+                            Addresses: {
+                                [staff.phoneNumber]: {
+                                    ChannelType: 'SMS'
+                                }
+                            },
+                            MessageConfiguration: {
+                                SMSMessage: {
+                                    Body: `New query in department ${department}: ${subject}\nQuery ID: ${uniqueId}`,
+                                    MessageType: 'TRANSACTIONAL'
+                                }
+                            }
+                        }
+                    };
+
+                    pinpoint.sendMessages(params, (err, data) => {
+                        if (err) {
+                            console.error('Error sending SMS:', err);
+                        } else {
+                            console.log('SMS sent:', data);
+                        }
+                    });
+                });
+
+                res.status(200).send('Query raised successfully');
+            });
+        });
+    });
 };
-
-export default RaiseQuery;
