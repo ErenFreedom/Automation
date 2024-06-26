@@ -28,6 +28,7 @@ const StaffQueryView = () => {
   const [queries, setQueries] = useState([]);
   const [department, setDepartment] = useState('');
   const [selectedQuery, setSelectedQuery] = useState(null);
+  const [staffId, setStaffId] = useState('');
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -39,6 +40,7 @@ const StaffQueryView = () => {
           },
         });
         setDepartment(response.data.department);
+        setStaffId(response.data.id);
       } catch (error) {
         console.error('Error fetching user details:', error);
       }
@@ -76,7 +78,7 @@ const StaffQueryView = () => {
       });
 
       // Mark query as viewed
-      await axios.post(`${process.env.REACT_APP_API_URL}/view-query`, { queryId, staffId: response.data.viewed_by }, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/view-query`, { queryId, staffId }, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -92,7 +94,7 @@ const StaffQueryView = () => {
   const handleClose = async (queryId) => {
     const token = localStorage.getItem('authToken');
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/close-query`, { queryId, staffId: response.data.closed_by }, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/close-query`, { queryId, staffId }, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
