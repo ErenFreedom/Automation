@@ -1,17 +1,35 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
-import './clientQueryStatus.css'; // Create this file for styling
+import './ClientQueryStatus.css';
 
 const ClientQueryStatus = () => {
-  const { userId } = useParams();
   const [queries, setQueries] = useState([]);
+  const [clientEmail, setClientEmail] = useState('');
+
+  useEffect(() => {
+    const fetchClientDetails = async () => {
+      const token = localStorage.getItem('authToken');
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/client-details`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setClientEmail(response.data.email);
+      } catch (error) {
+        console.error('Error fetching client details:', error);
+      }
+    };
+
+    fetchClientDetails();
+  }, []);
 
   useEffect(() => {
     const fetchQueries = async () => {
       const token = localStorage.getItem('authToken');
+      if (!clientEmail) return; // Ensure clientEmail is set before making the request
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/query/status`, {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/client-query-status/${clientEmail}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -23,20 +41,18 @@ const ClientQueryStatus = () => {
     };
 
     fetchQueries();
-  }, [userId]);
+  }, [clientEmail]);
 
   return (
     <div className="client-query-status-container">
-      <h2>Query Status</h2>
-      <div className="queries-list">
-        {queries.map((query) => (
-          <div key={query.id} className="query-item">
-            <h3>{query.subject}</h3>
-            <p>{query.message}</p>
-            <p>Status: {query.status}</p>
-          </div>
-        ))}
-      </div>
+      <h2>Your Queries</h2>
+      {queries.map(query => (
+        <div key={query.id} className="query-item">
+          <h3>{query.subject}</h3>
+          <p>{query.message}</p>
+          <p>Status: {query.status}</p>
+        </div>
+      ))}
     </div>
   );
 };

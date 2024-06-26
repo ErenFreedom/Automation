@@ -15,4 +15,7 @@ router.get('/queries/:department', authenticateToken, statusController.getQuerie
 // Route to get details of a specific query
 router.get('/query-details/:queryId', authenticateToken, statusController.getQueryDetails);
 
+// Route to get query status for a specific client
+router.get('/client-query-status/:clientEmail', authenticateToken, statusController.getClientQueryStatus);
+
 module.exports = router;
