@@ -24,6 +24,7 @@ const monitorRoutes = require('./routes/monitorRoutes');
 const queryRoutes = require('./routes/queryRoutes');
 const statusRoutes = require('./routes/statusRoutes'); // Add this line
 const clientRoutes = require('./routes/clientRoutes');
+const staffRoutes = require('./routes/staffRoutes');
 
 app.use(bodyParser.json());
 app.use(helmet());
@@ -48,6 +49,7 @@ app.use('/api', monitorRoutes); // Adding the new route for monitoring
 app.use('/api', queryRoutes); // Adding the new route for queries
 app.use('/api', statusRoutes); // Adding the new route for status management
 app.use('/api', clientRoutes);
+app.use('/api', staffRoutes);
 
 // Socket.io connection
 io.on('connection', (socket) => {

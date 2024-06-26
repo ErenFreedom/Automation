@@ -4,7 +4,25 @@ import './StaffQueryView.css';
 
 const StaffQueryView = () => {
   const [queries, setQueries] = useState([]);
-  const [department, setDepartment] = useState('temperature'); // Set a default department or fetch it dynamically
+  const [department, setDepartment] = useState('');
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      const token = localStorage.getItem('authToken');
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/staff-info`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setDepartment(response.data.department);
+      } catch (error) {
+        console.error('Error fetching user details:', error);
+      }
+    };
+
+    fetchUserDetails();
+  }, []);
 
   useEffect(() => {
     const fetchQueries = async () => {
