@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { FaBell, FaUserCircle } from 'react-icons/fa';
 import axios from 'axios';
 import logo from '../../assets/logo.png';
-import './DashboardHeader.css';
+import './StaffDashboardHeader.css';
 
 const DashboardHeader = () => {
   const { userId } = useParams();
