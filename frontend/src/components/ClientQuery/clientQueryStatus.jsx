@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './ClientQueryStatus.css';
+import './clientQueryStatus.css';
 
 const ClientQueryStatus = () => {
   const [queries, setQueries] = useState([]);
