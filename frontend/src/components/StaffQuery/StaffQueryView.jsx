@@ -4,11 +4,12 @@ import './StaffQueryView.css';
 
 const StaffQueryView = () => {
   const [queries, setQueries] = useState([]);
-  const [department, setDepartment] = useState(''); // You may want to set this based on logged-in user's department
+  const [department, setDepartment] = useState('temperature'); // Set a default department or fetch it dynamically
 
   useEffect(() => {
     const fetchQueries = async () => {
       const token = localStorage.getItem('authToken');
+      if (!department) return; // Ensure department is set before making the request
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/queries/${department}`, {
           headers: {
