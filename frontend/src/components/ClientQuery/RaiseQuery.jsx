@@ -1,21 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import './RaiseQuery.css'; // Create this file for styling
 
 const RaiseQuery = () => {
   const { userId } = useParams();
+  const [clientEmail, setClientEmail] = useState('');
   const [department, setDepartment] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+
+  useEffect(() => {
+    const fetchClientData = async () => {
+      const token = localStorage.getItem('authToken');
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/client-details`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setClientEmail(response.data.email); // Assuming the response contains the client's email
+      } catch (error) {
+        console.error('Error fetching client data:', error);
+        alert('Failed to fetch client data');
+      }
+    };
+
+    fetchClientData();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('authToken');
     
     const requestData = {
-      clientEmail: 'kartik.kumar21b@iiitg.ac.in', // Replace with dynamic client email if available
+      clientEmail,
       department,
       subject,
       message,
