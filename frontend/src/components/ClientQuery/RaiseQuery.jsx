@@ -5,6 +5,7 @@ import './RaiseQuery.css'; // Create this file for styling
 
 const RaiseQuery = () => {
   const { userId } = useParams();
+  const [clientEmail, setClientEmail] = useState('');
   const [department, setDepartment] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -14,6 +15,7 @@ const RaiseQuery = () => {
     e.preventDefault();
     const token = localStorage.getItem('authToken');
     const formData = new FormData();
+    formData.append('clientEmail', clientEmail);
     formData.append('department', department);
     formData.append('subject', subject);
     formData.append('message', message);
@@ -39,8 +41,12 @@ const RaiseQuery = () => {
       <h2>Raise a Query</h2>
       <form onSubmit={handleSubmit}>
         <div>
+          <label>Client Email:</label>
+          <input type="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} required />
+        </div>
+        <div>
           <label>Department:</label>
-          <select value={department} onChange={(e) => setDepartment(e.target.value)}>
+          <select value={department} onChange={(e) => setDepartment(e.target.value)} required>
             <option value="">Select Department</option>
             <option value="temperature">Temperature</option>
             <option value="pressure">Pressure</option>
@@ -50,11 +56,11 @@ const RaiseQuery = () => {
         </div>
         <div>
           <label>Subject:</label>
-          <input type="text" value={subject} onChange={(e) => setSubject(e.target.value)} />
+          <input type="text" value={subject} onChange={(e) => setSubject(e.target.value)} required />
         </div>
         <div>
           <label>Message:</label>
-          <textarea value={message} onChange={(e) => setMessage(e.target.value)}></textarea>
+          <textarea value={message} onChange={(e) => setMessage(e.target.value)} required></textarea>
         </div>
         <div>
           <label>Image:</label>
