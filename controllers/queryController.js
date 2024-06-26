@@ -1,6 +1,8 @@
 const nodemailer = require('nodemailer');
 const AWS = require('aws-sdk');
 const db = require('../config/db');
+const multer = require('multer');
+const path = require('path');
 require('dotenv').config();
 
 AWS.config.update({
@@ -19,8 +21,23 @@ const transporter = nodemailer.createTransport({
     },
 });
 
+// Configure Multer storage
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/'); // Directory where images will be stored
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname)); // Append timestamp to avoid filename conflicts
+    }
+});
+
+const upload = multer({ storage: storage });
+
+exports.uploadMiddleware = upload.single('image'); // Middleware to handle single file upload
+
 exports.raiseQuery = async (req, res) => {
-    const { clientEmail, department, subject, message, imageUrl } = req.body;
+    const { clientEmail, department, subject, message } = req.body;
+    const imageUrl = req.file ? req.file.path : null;
 
     // Insert query into database
     const insertQuery = 'INSERT INTO queries (clientEmail, department, subject, message, imageUrl) VALUES (?, ?, ?, ?, ?)';

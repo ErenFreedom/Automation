@@ -9,7 +9,7 @@ const RaiseQuery = () => {
   const [department, setDepartment] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [image, setImage] = useState(null);
 
   useEffect(() => {
     const fetchClientData = async () => {
@@ -33,19 +33,19 @@ const RaiseQuery = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('authToken');
-    
-    const requestData = {
-      clientEmail,
-      department,
-      subject,
-      message,
-      imageUrl,
-    };
+    const formData = new FormData();
+    formData.append('clientEmail', clientEmail);
+    formData.append('department', department);
+    formData.append('subject', subject);
+    formData.append('message', message);
+    if (image) {
+      formData.append('image', image);
+    }
 
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/raise-query`, requestData, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/raise-query`, formData, {
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`,
         },
       });
@@ -79,8 +79,8 @@ const RaiseQuery = () => {
           <textarea value={message} onChange={(e) => setMessage(e.target.value)}></textarea>
         </div>
         <div>
-          <label>Image URL:</label>
-          <input type="text" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
+          <label>Image:</label>
+          <input type="file" onChange={(e) => setImage(e.target.files[0])} />
         </div>
         <button type="submit">Submit</button>
       </form>
