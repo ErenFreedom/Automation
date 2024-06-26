@@ -2,9 +2,32 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './StaffQueryView.css';
 
+const QueryDetailsModal = ({ queryDetails, onClose }) => {
+  if (!queryDetails) return null;
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h2>{queryDetails.subject}</h2>
+        <p><strong>Email:</strong> {queryDetails.clientEmail}</p>
+        <p><strong>Department:</strong> {queryDetails.department}</p>
+        <p><strong>Message:</strong> {queryDetails.message}</p>
+        {queryDetails.imageUrl && (
+          <div>
+            <strong>Attached Image:</strong>
+            <img src={queryDetails.imageUrl} alt="Attached" />
+          </div>
+        )}
+        <button onClick={onClose}>Close</button>
+      </div>
+    </div>
+  );
+};
+
 const StaffQueryView = () => {
   const [queries, setQueries] = useState([]);
   const [department, setDepartment] = useState('');
+  const [selectedQuery, setSelectedQuery] = useState(null);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -46,14 +69,14 @@ const StaffQueryView = () => {
   const handleView = async (queryId) => {
     const token = localStorage.getItem('authToken');
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/view-query`, { queryId }, {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/query-details/${queryId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      setQueries(queries.map(q => q.id === queryId ? { ...q, status: 'Pending' } : q));
+      setSelectedQuery(response.data);
     } catch (error) {
-      console.error('Error updating query status:', error);
+      console.error('Error fetching query details:', error);
     }
   };
 
@@ -69,6 +92,10 @@ const StaffQueryView = () => {
     } catch (error) {
       console.error('Error closing query:', error);
     }
+  };
+
+  const closeModal = () => {
+    setSelectedQuery(null);
   };
 
   return (
@@ -87,6 +114,7 @@ const StaffQueryView = () => {
           )}
         </div>
       ))}
+      <QueryDetailsModal queryDetails={selectedQuery} onClose={closeModal} />
     </div>
   );
 };
