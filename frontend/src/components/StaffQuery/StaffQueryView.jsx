@@ -7,7 +7,7 @@ const StaffQueryView = () => {
   const [department, setDepartment] = useState('');
 
   useEffect(() => {
-    const fetchUserDetails = async () => {
+    const fetchStaffData = async () => {
       const token = localStorage.getItem('authToken');
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/staff-info`, {
@@ -15,13 +15,14 @@ const StaffQueryView = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        setDepartment(response.data.department);
+        setDepartment(response.data.department); // Assuming the response contains the staff's department
       } catch (error) {
-        console.error('Error fetching user details:', error);
+        console.error('Error fetching staff data:', error);
+        alert('Failed to fetch staff data');
       }
     };
 
-    fetchUserDetails();
+    fetchStaffData();
   }, []);
 
   useEffect(() => {
@@ -37,6 +38,7 @@ const StaffQueryView = () => {
         setQueries(response.data);
       } catch (error) {
         console.error('Error fetching queries:', error);
+        alert('Failed to fetch queries');
       }
     };
 
@@ -54,6 +56,7 @@ const StaffQueryView = () => {
       setQueries(queries.map(q => q.id === queryId ? { ...q, status: 'Pending' } : q));
     } catch (error) {
       console.error('Error updating query status:', error);
+      alert('Failed to update query status');
     }
   };
 
@@ -68,6 +71,7 @@ const StaffQueryView = () => {
       setQueries(queries.map(q => q.id === queryId ? { ...q, status: 'Finished' } : q));
     } catch (error) {
       console.error('Error closing query:', error);
+      alert('Failed to close query');
     }
   };
 
