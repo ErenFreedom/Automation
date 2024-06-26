@@ -5,15 +5,13 @@ import './StaffQueryView.css';
 const StaffQueryView = () => {
   const [queries, setQueries] = useState([]);
   const [department, setDepartment] = useState('');
+  const userId = '1'; // Hardcoded userId for testing
 
   useEffect(() => {
     const fetchStaffData = async () => {
-      const token = localStorage.getItem('authToken');
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/staff-info`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          params: { userId }, // Pass userId as a query parameter
         });
         setDepartment(response.data.department); // Assuming the response contains the staff's department
       } catch (error) {
@@ -27,14 +25,9 @@ const StaffQueryView = () => {
 
   useEffect(() => {
     const fetchQueries = async () => {
-      const token = localStorage.getItem('authToken');
       if (!department) return; // Ensure department is set before making the request
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/queries/${department}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/queries/${department}`);
         setQueries(response.data);
       } catch (error) {
         console.error('Error fetching queries:', error);
@@ -46,13 +39,8 @@ const StaffQueryView = () => {
   }, [department]);
 
   const handleView = async (queryId) => {
-    const token = localStorage.getItem('authToken');
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/view-query`, { queryId }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await axios.post(`${process.env.REACT_APP_API_URL}/view-query`, { queryId });
       setQueries(queries.map(q => q.id === queryId ? { ...q, status: 'Pending' } : q));
     } catch (error) {
       console.error('Error updating query status:', error);
@@ -61,13 +49,8 @@ const StaffQueryView = () => {
   };
 
   const handleClose = async (queryId) => {
-    const token = localStorage.getItem('authToken');
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/close-query`, { queryId }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await axios.post(`${process.env.REACT_APP_API_URL}/close-query`, { queryId });
       setQueries(queries.map(q => q.id === queryId ? { ...q, status: 'Finished' } : q));
     } catch (error) {
       console.error('Error closing query:', error);

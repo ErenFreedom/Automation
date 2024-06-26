@@ -1,7 +1,11 @@
 const db = require('../config/db');
 
 exports.getStaffInfo = (req, res) => {
-  const userId = req.user.id; // Assuming the user ID is stored in the token
+  const userId = req.query.userId; // Use query parameter for testing
+  if (!userId) {
+    return res.status(400).send('User ID is required');
+  }
+
   const getStaffQuery = 'SELECT * FROM staff WHERE id = ?';
   db.query(getStaffQuery, [userId], (err, results) => {
     if (err) {
