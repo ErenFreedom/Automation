@@ -24,9 +24,10 @@ const RaiseQuery = () => {
     }
 
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/raise-query`, formData, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/raise-query`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data', // Ensure this header is set
         },
       });
       alert('Query raised successfully');
