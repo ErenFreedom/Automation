@@ -143,7 +143,15 @@ exports.verifyLogin = async (req, res) => {
                 return res.status(400).send('Invalid or expired OTP.');
             }
 
-            const token = jwt.sign({ email: user.email, userId: user.id }, secretKey, { expiresIn: '1h' });
+            const token = jwt.sign(
+                { 
+                  email: user.email, 
+                  userId: user.id, 
+                  department: user.department 
+                }, 
+                secretKey, 
+                { expiresIn: '1h' }
+            );
 
             const deleteOtpQuery = 'DELETE FROM otps WHERE email = ?';
             db.query(deleteOtpQuery, [email], (err) => {
