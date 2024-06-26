@@ -12,4 +12,7 @@ router.post('/close-query', authenticateToken, statusController.closeQuery);
 // Route to get all queries for a department
 router.get('/queries/:department', authenticateToken, statusController.getQueries);
 
+// Route to get details of a specific query
+router.get('/query-details/:queryId', authenticateToken, statusController.getQueryDetails);
+
 module.exports = router;
