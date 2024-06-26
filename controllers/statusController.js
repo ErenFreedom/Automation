@@ -2,8 +2,7 @@ const db = require('../config/db');
 
 // Mark query as viewed
 exports.viewQuery = (req, res) => {
-    const { queryId } = req.body;
-    const staffId = req.user.userId;  // Fetching staffId from the token
+    const { queryId, staffId } = req.body;
 
     const updateStatusQuery = `
         UPDATE query_status 
@@ -21,8 +20,7 @@ exports.viewQuery = (req, res) => {
 
 // Mark query as closed
 exports.closeQuery = (req, res) => {
-    const { queryId } = req.body;
-    const staffId = req.user.userId;  // Fetching staffId from the token
+    const { queryId, staffId } = req.body;
 
     const updateStatusQuery = `
         UPDATE query_status 
@@ -41,7 +39,11 @@ exports.closeQuery = (req, res) => {
 
 // Fetch queries for a specific department
 exports.getQueries = (req, res) => {
-    const department = req.user.department;  // Fetching department from the token
+    const { department } = req.params;
+
+    if (!department) {
+        return res.status(400).send('Department is required');
+    }
 
     const selectQueries = `
         SELECT q.*, qs.status, qs.viewed_by, qs.closed_by, qs.viewed_at, qs.closed_at, qs.time_to_close 
