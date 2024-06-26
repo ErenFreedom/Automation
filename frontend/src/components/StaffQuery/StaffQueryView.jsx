@@ -74,6 +74,15 @@ const StaffQueryView = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+
+      // Mark query as viewed
+      await axios.post(`${process.env.REACT_APP_API_URL}/view-query`, { queryId, staffId: response.data.viewed_by }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setQueries(queries.map(q => q.id === queryId ? { ...q, status: 'Pending' } : q));
       setSelectedQuery(response.data);
     } catch (error) {
       console.error('Error fetching query details:', error);
@@ -83,7 +92,7 @@ const StaffQueryView = () => {
   const handleClose = async (queryId) => {
     const token = localStorage.getItem('authToken');
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/close-query`, { queryId }, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/close-query`, { queryId, staffId: response.data.closed_by }, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
