@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const http = require('http');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -28,6 +29,9 @@ const staffRoutes = require('./routes/staffRoutes');
 
 app.use(bodyParser.json());
 app.use(helmet());
+
+// Serve static files from the "uploads" directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Rate limiter
 const limiter = rateLimit({
