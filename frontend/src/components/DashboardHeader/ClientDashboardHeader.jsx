@@ -53,13 +53,12 @@ const ClientDashboardHeader = () => {
         <h1 className="intelli-monitor-heading">IntelliMonitor</h1>
       </div>
       <div className="dashboard-header-options">
-        <div className="dashboard-query-buttons">
-          <Link to={`/raise-query/${userId}`}>
-            <button>Raise a Query</button>
-          </Link>
-          <Link to={`/query-status/${userId}`}>
-            <button>Check Query Status</button>
-          </Link>
+        <div className="dashboard-query-dropdown">
+          <button className="dropbtn">Queries</button>
+          <div className="dropdown-content">
+            <Link to={`/raise-query/${userId}`}>Raise a Query</Link>
+            <Link to={`/query-status/${userId}`}>Check Query Status</Link>
+          </div>
         </div>
         <div className="dashboard-report-button">
           <Link to={`/report/${userId}`}>

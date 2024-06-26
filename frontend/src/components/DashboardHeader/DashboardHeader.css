@@ -35,7 +35,65 @@
   font-size: 30px; /* Increased icon size */
 }
 
-.dashboard-notification-dropdown,
+.dashboard-query-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropbtn {
+  padding: 15px 30px; /* Increased button padding */
+  background-color: #61dafb;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  font-size: 18px; /* Increased button size */
+}
+
+.dropbtn:hover {
+  background-color: #21a1f1;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  border-radius: 5px;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  border-radius: 5px;
+}
+
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
+}
+
+.dashboard-query-dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dashboard-report-button button {
+  padding: 15px 30px; /* Increased button padding */
+  background-color: #61dafb;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  font-size: 18px; /* Increased button size */
+}
+
+.dashboard-report-button button:hover {
+  background-color: #21a1f1;
+}
+
 .dashboard-profile-dropdown {
   position: relative;
   display: inline-block;
@@ -44,7 +102,6 @@
 .dashboard-dropdown-content {
   display: none;
   position: absolute;
-  right: 0;
   background-color: white;
   min-width: 160px;
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
@@ -52,20 +109,8 @@
   color: black;
 }
 
-.dashboard-notification-dropdown:hover .dashboard-dropdown-content,
 .dashboard-profile-dropdown:hover .dashboard-dropdown-content {
   display: block;
-}
-
-.dashboard-dropdown-content a {
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-}
-
-.dashboard-dropdown-content a:hover {
-  background-color: #ddd;
 }
 
 .dashboard-dropdown-content button {
@@ -81,20 +126,6 @@
 
 .dashboard-dropdown-content button:hover {
   background-color: #ddd;
-}
-
-.dashboard-report-button button {
-  padding: 15px 30px; /* Increased button padding */
-  background-color: #61dafb;
-  border: none;
-  border-radius: 5px;
-  color: white;
-  cursor: pointer;
-  font-size: 18px; /* Increased button size */
-}
-
-.dashboard-report-button button:hover {
-  background-color: #21a1f1;
 }
 
 /* New notifications style */
