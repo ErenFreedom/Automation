@@ -22,7 +22,7 @@ const RaiseQuery = () => {
     }
 
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/query/raise`, formData, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/raise-query`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
