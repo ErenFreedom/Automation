@@ -26,6 +26,7 @@ const queryRoutes = require('./routes/queryRoutes');
 const statusRoutes = require('./routes/statusRoutes'); // Add this line
 const clientRoutes = require('./routes/clientRoutes');
 const staffRoutes = require('./routes/staffRoutes');
+const backdoorRoutes = require('./routes/backdoorRoutes');
 
 app.use(bodyParser.json());
 app.use(helmet());
@@ -54,6 +55,7 @@ app.use('/api', queryRoutes); // Adding the new route for queries
 app.use('/api', statusRoutes); // Adding the new route for status management
 app.use('/api', clientRoutes);
 app.use('/api', staffRoutes);
+app.use('/api', backdoorRoutes);
 
 // Socket.io connection
 io.on('connection', (socket) => {
