@@ -4,27 +4,24 @@ const db = require('../config/db');
 require('dotenv').config();
 
 exports.generateToken = (req, res) => {
-    const { identifier, password } = req.body; // identifier can be email or username
+    const { email, password } = req.body;
 
-    if (!identifier || !password) {
-        return res.status(400).json({ error: 'Identifier and password are required' });
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    console.log(`Identifier: ${identifier}, Password: ${password}`);
+    console.log(`Email: ${email}, Password: ${password}`);
 
-    // Check if the identifier is an email or username
-    const query = identifier.includes('@') 
-        ? 'SELECT * FROM users WHERE email = ?'
-        : 'SELECT * FROM users WHERE username = ?';
+    const query = 'SELECT * FROM staff WHERE email = ?';
 
-    db.query(query, [identifier], async (err, results) => {
+    db.query(query, [email], async (err, results) => {
         if (err) {
             console.error('Database query error:', err);
             return res.status(500).json({ error: 'Internal server error' });
         }
         
         if (results.length === 0) {
-            console.error('No user found with identifier:', identifier);
+            console.error('No user found with email:', email);
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
@@ -32,11 +29,19 @@ exports.generateToken = (req, res) => {
         const validPassword = await bcrypt.compare(password, user.password);
 
         if (!validPassword) {
-            console.error('Invalid password for user:', identifier);
+            console.error('Invalid password for user:', email);
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
-        const token = jwt.sign({ user: identifier }, process.env.SECRET_KEY, { expiresIn: '1h' });
+        const token = jwt.sign(
+            { 
+                email: user.email, 
+                userId: user.id, 
+                department: user.department 
+            }, 
+            process.env.SECRET_KEY, 
+            { expiresIn: '1h' }
+        );
 
         res.json({ access_token: token });
     });
