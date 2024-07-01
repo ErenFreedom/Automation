@@ -6,15 +6,27 @@ require('dotenv').config();
 exports.generateToken = (req, res) => {
     const { email, password } = req.body; 
 
+    // Log received email and password
+    console.log(`Received email: ${email}, password: ${password}`);
+
     const query = 'SELECT * FROM staff WHERE email = ?';
 
     db.query(query, [email], async (err, results) => {
-        if (err || results.length === 0) {
+        if (err) {
+            console.error('Database query error:', err);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+        
+        if (results.length === 0) {
+            console.log('No user found with the provided email');
             return res.status(401).json({ error: 'Unauthorized' });
         }
         
         const user = results[0];
+        console.log('User found:', user);
+
         const validPassword = await bcrypt.compare(password, user.password);
+        console.log('Password valid:', validPassword);
 
         if (!validPassword) {
             return res.status(401).json({ error: 'Unauthorized' });
