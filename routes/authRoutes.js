@@ -1,27 +1,30 @@
 const express = require('express');
-const router = express.Router();
 const { check } = require('express-validator');
 const authController = require('../controllers/authController');
 
-router.post('/register', [
-    check('email').isEmail().withMessage('Please enter a valid email address'),
-    check('username').isAlphanumeric().withMessage('Username must be alphanumeric'),
-    check('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
-], authController.register);
+const router = express.Router();
 
-router.post('/verify-registration', [
-    check('email').isEmail().withMessage('Please enter a valid email address'),
-    check('otp').isNumeric().withMessage('OTP must be numeric').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits long')
-], authController.verifyRegistration);
+router.post('/register-staff', [
+    check('email', 'Valid email is required').isEmail(),
+    check('username', 'Username is required').not().isEmpty(),
+    check('password', 'Password is required').not().isEmpty(),
+    check('name', 'Name is required').not().isEmpty(),
+    check('gender', 'Gender is required').not().isEmpty(),
+    check('age', 'Age is required').not().isEmpty(),
+    check('phoneNumber', 'Phone number is required').not().isEmpty(),
+    check('department', 'Department is required').not().isEmpty()
+], authController.registerStaff);
 
-router.post('/login', [
-    check('identifier').isLength({ min: 3 }).withMessage('Identifier must be at least 3 characters long'),
-    check('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
+router.post('/verify-staff-registration', authController.verifyStaffRegistration);
+
+router.post('/login-staff', [
+    check('identifier', 'Email or Username is required').not().isEmpty(),
+    check('password', 'Password is required').not().isEmpty()
 ], authController.login);
 
-router.post('/verify-login', [
-    check('email').isEmail().withMessage('Please enter a valid email address'),
-    check('otp').isNumeric().withMessage('OTP must be numeric').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits long')
+router.post('/verify-staff-login', [
+    check('email', 'Email is required').isEmail(),
+    check('otp', 'OTP must be numeric and 6 digits long').isNumeric().isLength({ min: 6, max: 6 })
 ], authController.verifyLogin);
 
 module.exports = router;
