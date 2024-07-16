@@ -30,7 +30,7 @@ const latestDataRoutes = require('./routes/latestDataRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const graphRoutes = require('./routes/graphRoutes');
 const accountRoutes = require('./routes/accountRoutes');
-const monitorRoutes = require('./routes/monitorRoutes');
+//const monitorRoutes = require('./routes/monitorRoutes');
 const queryRoutes = require('./routes/queryRoutes');
 const statusRoutes = require('./routes/statusRoutes');
 const clientRoutes = require('./routes/clientRoutes');
@@ -74,7 +74,7 @@ app.use('/api', latestDataRoutes); // Adding the new route for latest data
 app.use('/api', reportRoutes); // Adding the new route for report generation
 app.use('/api/graph', graphRoutes);// Adding the new route for graph data
 app.use('/api', accountRoutes); // Adding the new route for account actions
-app.use('/api', monitorRoutes); // Adding the new route for monitoring
+//app.use('/api', monitorRoutes); // Adding the new route for monitoring
 app.use('/api', queryRoutes); // Adding the new route for queries
 app.use('/api', statusRoutes); // Adding the new route for status management
 app.use('/api', clientRoutes);
