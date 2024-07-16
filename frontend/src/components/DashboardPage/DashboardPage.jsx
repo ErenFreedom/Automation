@@ -31,10 +31,10 @@ const DashboardPage = () => {
             {loading && <p>Loading data...</p>}
             {error && <p className="error">{error}</p>}
             {data && data.map((apiData) => (
-              <Link key={apiData.api} to={`/${apiData.api}/${userId}`} className="rectangle-link">
+              <Link key={apiData.sensor_api} to={`/${apiData.sensor_api}/${userId}`} className="rectangle-link">
                 <div className="rectangle">
-                  <p>{apiData.api.replace(/^.*[\\/]/, '')} Value: {apiData.data[0]?.value}</p>
-                  <p>Updated At: {apiData.data[0]?.timestamp}</p>
+                  <p>{apiData.sensor_api.replace(/^.*[\\/]/, '')} Value: {apiData.value}</p>
+                  <p>Updated At: {new Date(apiData.timestamp).toLocaleString()}</p>
                 </div>
               </Link>
             ))}
