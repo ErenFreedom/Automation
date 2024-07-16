@@ -15,7 +15,7 @@ const DashboardPage = () => {
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-      dispatch(fetchData({ url: `${process.env.REACT_APP_API_URL}/fetch-last-sensor-data-each-api`, token }));
+      dispatch(fetchData({ url: '/sensor-data/fetch-last-sensor-data-each-api', token }));
     }
   }, [dispatch]);
 
@@ -34,7 +34,7 @@ const DashboardPage = () => {
               <Link key={apiData.sensor_api} to={`/${apiData.sensor_api}/${userId}`} className="rectangle-link">
                 <div className="rectangle">
                   <p>{apiData.sensor_api.replace(/^.*[\\/]/, '')} Value: {apiData.value}</p>
-                  <p>Updated At: {new Date(apiData.timestamp).toLocaleString()}</p>
+                  <p>Updated At: {apiData.timestamp}</p>
                 </div>
               </Link>
             ))}

@@ -7,7 +7,7 @@ export const FETCH_DATA_FAILURE = 'FETCH_DATA_FAILURE';
 export const fetchData = ({ url, token }) => async (dispatch) => {
     dispatch({ type: FETCH_DATA_REQUEST });
     try {
-        const response = await axios.get(url, {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}${url}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
