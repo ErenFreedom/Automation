@@ -1,0 +1,24 @@
+.config-tabs {
+    display: flex;
+    margin-top: 20px;
+  }
+  
+  .config-tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+  
+  .config-tab.active {
+    border-bottom: 2px solid #61dafb;
+  }
+  
+  .config-content {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-top: 20px;
+  }
+  

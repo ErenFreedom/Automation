@@ -1,0 +1,49 @@
+.report-page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f4f4f4;
+}
+
+.report-form {
+  background: #fff;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 50%; /* Adjust the width to cover 50% of the screen */
+  max-width: 800px; /* Set a maximum width to prevent it from getting too large */
+}
+
+.report-form h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.report-form label {
+  display: block;
+  margin-top: 20px; /* Increase the margin-top for better spacing */
+}
+
+.report-form select {
+  width: 100%;
+  padding: 12px; /* Increase the padding for better appearance */
+  margin-top: 10px; /* Increase the margin-top for better spacing */
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.report-form button {
+  width: 100%;
+  padding: 15px; /* Increase the padding for better appearance */
+  margin-top: 30px; /* Increase the margin-top for better spacing */
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.report-form button:hover {
+  background-color: #0056b3;
+}

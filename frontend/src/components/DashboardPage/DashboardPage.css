@@ -1,0 +1,136 @@
+.dashboard-page-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.welcome-container {
+  width: 100%;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.welcome-message {
+  margin: 0;
+  margin-left: 20px; /* Add margin to the left */
+}
+
+.dashboard-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.dashboard-content {
+  width: 100%;
+  max-width: 1200px;
+  padding: 20px;
+}
+
+.rectangles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 130px; /* Increase gap between rectangles */
+  width: 100%;
+  max-width: 1200px;
+  margin-top: 20px; /* Add margin to separate from the welcome message */
+}
+
+.rectangle {
+  background-color: #f0f0f0;
+  padding: 80px; /* Increase padding to make the rectangles bigger */
+  text-align: center;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer; /* Add cursor pointer for clickable effect */
+}
+
+.rectangle-link {
+  text-decoration: none; /* Remove underline from link */
+  color: inherit; /* Inherit color from parent */
+}
+
+/* Media queries for smaller screens */
+
+/* For laptops */
+@media (max-width: 1024px) {
+  .welcome-container {
+    padding: 15px;
+    margin-top: 15px;
+  }
+
+  .welcome-message {
+    margin-left: 15px; /* Adjust margin for smaller screens */
+    font-size: 20px; /* Adjust font size for welcome message */
+  }
+
+  .dashboard-content {
+    padding: 15px;
+  }
+
+  .rectangles {
+    gap: 100px; /* Adjust gap between rectangles */
+  }
+
+  .rectangle {
+    padding: 60px; /* Adjust padding to make the rectangles smaller */
+    font-size: 16px; /* Adjust font size */
+  }
+}
+
+/* For iPads and tablets */
+@media (max-width: 768px) {
+  .welcome-container {
+    padding: 10px;
+    margin-top: 10px;
+  }
+
+  .welcome-message {
+    margin-left: 10px; /* Adjust margin for tablets */
+    font-size: 18px; /* Adjust font size for welcome message */
+  }
+
+  .dashboard-content {
+    padding: 10px;
+  }
+
+  .rectangles {
+    grid-template-columns: 1fr; /* Change to single column layout */
+    gap: 50px; /* Adjust gap between rectangles */
+  }
+
+  .rectangle {
+    padding: 50px; /* Adjust padding for tablets */
+    font-size: 16px; /* Adjust font size */
+  }
+}
+
+/* For iPhones and Samsung phones */
+@media (max-width: 480px) {
+  .welcome-container {
+    padding: 5px;
+    margin-top: 5px;
+  }
+
+  .welcome-message {
+    margin-left: 5px; /* Adjust margin for phones */
+    font-size: 16px; /* Adjust font size for welcome message */
+  }
+
+  .dashboard-content {
+    padding: 5px;
+  }
+
+  .rectangles {
+    grid-template-columns: 1fr; /* Single column layout for phones */
+    gap: 30px; /* Adjust gap between rectangles */
+  }
+
+  .rectangle {
+    padding: 40px; /* Adjust padding for phones */
+    font-size: 14px; /* Adjust font size */
+  }
+}
