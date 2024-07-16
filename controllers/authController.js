@@ -8,20 +8,20 @@ const { generateOTP, sendOTPEmail, decryptData } = require('../utils/otpGenerati
 const secretKey = process.env.SECRET_KEY;
 
 // Register a new staff member
-exports.register = async (req, res) => {
+exports.registerStaff = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, username, password, department } = req.body;
+    const { email, username, password, name, gender, age, phoneNumber, department } = req.body;
     const decryptedPassword = decryptData(password);
 
     const checkQuery = 'SELECT * FROM staff WHERE email = ? OR username = ?';
     db.query(checkQuery, [email, username], async (err, results) => {
         if (err) {
-            console.error('Error checking staff:', err);
-            return res.status(500).send('Error checking staff');
+            console.error('Error checking staff member:', err);
+            return res.status(500).send('Error checking staff member');
         }
 
         if (results.length > 0) {
@@ -31,8 +31,8 @@ exports.register = async (req, res) => {
         const otp = generateOTP();
         const expiresAt = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes from now
 
-        const insertOtpQuery = 'INSERT INTO otps (email, otp, expires_at, password, username, department) VALUES (?, ?, ?, ?, ?, ?)';
-        db.query(insertOtpQuery, [email, otp, expiresAt, decryptedPassword, username, department], async (err) => {
+        const insertOtpQuery = 'INSERT INTO otps (email, otp, expires_at, password, username, name, gender, age, phoneNumber, department) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        db.query(insertOtpQuery, [email, otp, expiresAt, decryptedPassword, username, name, gender, age, phoneNumber, department], async (err) => {
             if (err) {
                 console.error('Error storing OTP:', err);
                 return res.status(500).send('Error storing OTP');
@@ -44,9 +44,12 @@ exports.register = async (req, res) => {
     });
 };
 
-// Verify OTP and complete registration
-exports.verifyRegistration = async (req, res) => {
+// Verify OTP and complete staff registration
+exports.verifyStaffRegistration = async (req, res) => {
     const { email, otp } = req.body;
+    console.log(`Verifying OTP for registration`);
+    console.log(`Email: ${email}, OTP: ${otp}`);
+
     const checkOtpQuery = 'SELECT * FROM otps WHERE email = ? AND otp = ?';
     db.query(checkOtpQuery, [email, otp], async (err, results) => {
         if (err || results.length === 0) {
@@ -61,11 +64,11 @@ exports.verifyRegistration = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(otpData.password, 10);
-        const query = 'INSERT INTO staff (email, username, password, department) VALUES (?, ?, ?, ?)';
-        db.query(query, [email, otpData.username, hashedPassword, otpData.department], (err) => {
+        const query = 'INSERT INTO staff (email, username, password, name, gender, age, phoneNumber, department) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+        db.query(query, [email, otpData.username, hashedPassword, otpData.name, otpData.gender, otpData.age, otpData.phoneNumber, otpData.department], (err) => {
             if (err) {
-                console.error('Error registering staff:', err);
-                return res.status(500).send('Error registering staff');
+                console.error('Error registering staff member:', err);
+                return res.status(500).send('Error registering staff member');
             }
 
             const deleteOtpQuery = 'DELETE FROM otps WHERE email = ?';
@@ -75,12 +78,12 @@ exports.verifyRegistration = async (req, res) => {
                 }
             });
 
-            res.send('Staff registered successfully');
+            res.send('Staff member registered successfully');
         });
     });
 };
 
-// Login staff
+// Login user (staff or client)
 exports.login = (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -95,8 +98,8 @@ exports.login = (req, res) => {
         if (err || results.length === 0) {
             return res.status(401).send('Invalid credentials');
         }
-        const staff = results[0];
-        const validPassword = await bcrypt.compare(decryptedPassword, staff.password);
+        const user = results[0];
+        const validPassword = await bcrypt.compare(decryptedPassword, user.password);
         if (!validPassword) {
             return res.status(401).send('Invalid credentials');
         }
@@ -105,14 +108,14 @@ exports.login = (req, res) => {
         const expiresAt = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes from now
 
         const insertOtpQuery = 'INSERT INTO otps (email, otp, expires_at) VALUES (?, ?, ?)';
-        db.query(insertOtpQuery, [staff.email, otp, expiresAt], async (err) => {
+        db.query(insertOtpQuery, [user.email, otp, expiresAt], async (err) => {
             if (err) {
                 console.error('Error storing OTP:', err);
                 return res.status(500).send('Error storing OTP');
             }
-            console.log(`OTP ${otp} stored for email ${staff.email}`);
-            await sendOTPEmail(staff.email, otp);
-            res.status(200).json({ email: staff.email, userId: staff.id, department: staff.department }); // Return email, userId, and department
+            console.log(`OTP ${otp} stored for email ${user.email}`);
+            await sendOTPEmail(user.email, otp);
+            res.status(200).json({ email: user.email, userId: user.id }); // Return email and userId
         });
     });
 };
@@ -121,14 +124,14 @@ exports.login = (req, res) => {
 exports.verifyLogin = async (req, res) => {
     const { email, otp } = req.body;
     const query = 'SELECT * FROM staff WHERE email = ?';
-    db.query(query, [email], (err, results) => {
+    db.query(query, [email], async (err, results) => {
         if (err || results.length === 0) {
             return res.status(400).send('Invalid identifier.');
         }
 
-        const staff = results[0];
+        const user = results[0];
         const checkOtpQuery = 'SELECT * FROM otps WHERE email = ? AND otp = ?';
-        db.query(checkOtpQuery, [email, otp], (err, results) => {
+        db.query(checkOtpQuery, [email, otp], async (err, results) => {
             if (err || results.length === 0) {
                 console.error(`Invalid or expired OTP for email ${email}`);
                 return res.status(400).send('Invalid or expired OTP.');
@@ -140,7 +143,15 @@ exports.verifyLogin = async (req, res) => {
                 return res.status(400).send('Invalid or expired OTP.');
             }
 
-            const token = jwt.sign({ email: staff.email, userId: staff.id, department: staff.department }, secretKey, { expiresIn: '1h' });
+            const token = jwt.sign(
+                {
+                    email: user.email,
+                    userId: user.id,
+                    department: user.department
+                },
+                secretKey,
+                { expiresIn: '1h' }
+            );
 
             const deleteOtpQuery = 'DELETE FROM otps WHERE email = ?';
             db.query(deleteOtpQuery, [email], (err) => {
