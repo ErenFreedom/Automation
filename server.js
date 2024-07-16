@@ -14,13 +14,12 @@ const port = process.env.PORT || 3001;
 // SSL Certificate and Key
 const sslOptions = {
   key: fs.readFileSync('./key.pem'), 
-    cert: fs.readFileSync('./cert.pem') 
+  cert: fs.readFileSync('./cert.pem') 
 };
 
 // Create HTTPS server
 const server = https.createServer(sslOptions, app);
-const socket = require('./socket');
-const io = socket.init(server); // Initialize socket.io
+const io = require('socket.io')(server); // Initialize socket.io
 
 const authRoutes = require('./routes/authRoutes');
 const authClientRoutes = require('./routes/authClientRoutes');
@@ -91,6 +90,26 @@ io.on('connection', (socket) => {
     console.log('Client disconnected');
   });
 });
+
+// Emit updates to connected clients
+setInterval(async () => {
+    const fetchLatestDataQuery = `
+        SELECT * FROM staff_sensor_data_3 AS s1
+        WHERE s1.id = (
+            SELECT MAX(s2.id)
+            FROM staff_sensor_data_3 AS s2
+            WHERE s2.sensor_api = s1.sensor_api
+        )
+    `;
+
+    db.query(fetchLatestDataQuery, (err, results) => {
+        if (err) {
+            console.error('Error fetching sensor data:', err);
+        } else {
+            io.emit('sensorDataUpdate', results);
+        }
+    });
+}, 5000); // Adjust the interval as needed
 
 // Start the scheduler
 require('./scheduler');

@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchData } from '../../actions/dataActions';
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
+import socketIOClient from "socket.io-client";
 import './DashboardPage.css';
 
 const DashboardPage = () => {
@@ -17,6 +18,16 @@ const DashboardPage = () => {
     if (token) {
       dispatch(fetchData({ url: '/sensor-data/fetch-last-sensor-data-each-api', token }));
     }
+
+    const socket = socketIOClient(process.env.REACT_APP_API_URL, {
+      transports: ['websocket']
+    });
+
+    socket.on('sensorDataUpdate', (newData) => {
+      dispatch({ type: 'FETCH_DATA_SUCCESS', payload: newData });
+    });
+
+    return () => socket.disconnect();
   }, [dispatch]);
 
   return (
