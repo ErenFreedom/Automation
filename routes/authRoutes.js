@@ -17,7 +17,7 @@ router.post('/register-staff', [
 
 router.post('/verify-staff-registration', authController.verifyStaffRegistration);
 
-router.post('/login-staff', [
+router.post('/login', [
     check('identifier', 'Email or Username is required').not().isEmpty(),
     check('password', 'Password is required').not().isEmpty()
 ], authController.login);
