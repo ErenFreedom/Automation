@@ -22,7 +22,7 @@ router.post('/login', [
     check('password', 'Password is required').not().isEmpty()
 ], authController.login);
 
-router.post('/verify-staff-login', [
+router.post('/verify-login', [
     check('email', 'Email is required').isEmail(),
     check('otp', 'OTP must be numeric and 6 digits long').isNumeric().isLength({ min: 6, max: 6 })
 ], authController.verifyLogin);
