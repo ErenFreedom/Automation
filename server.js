@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const session = require('express-session');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const app = express();
@@ -54,6 +55,14 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Session management
+app.use(session({
+  secret: 'your_secret_key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false, sameSite: 'none' } // Ensure cookies are sent with cross-site requests
+}));
+
 // Serve static files from the "uploads" directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -63,14 +72,6 @@ const limiter = rateLimit({
   max: 100, // limit each IP to 100 requests per windowMs
 });
 app.use(limiter);
-
-// Session management
-app.use(session({
-  secret: 'your_secret_key',
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false } // Set to true if using HTTPS
-}));
 
 // Routes
 app.use('/api', authRoutes);
@@ -93,30 +94,44 @@ app.use('/api/sensor-data', sensorDataRoutes);
 // Socket.io connection
 io.on('connection', (socket) => {
   console.log('New client connected');
-  socket.on('disconnect', () => {
-    console.log('Client disconnected');
+
+  // Listen for authentication
+  socket.on('authenticate', (token) => {
+    try {
+      const decoded = jwt.verify(token, process.env.SECRET_KEY);
+      const { userId } = decoded;
+      socket.userId = userId; // Store userId in socket session
+
+      // Emit updates to the authenticated client
+      const interval = setInterval(async () => {
+        const fetchLatestDataQuery = `
+          SELECT * FROM staff_sensor_data_${userId} AS s1
+          WHERE s1.id = (
+            SELECT MAX(s2.id)
+            FROM staff_sensor_data_${userId} AS s2
+            WHERE s2.sensor_api = s1.sensor_api
+          )
+        `;
+
+        db.query(fetchLatestDataQuery, (err, results) => {
+          if (err) {
+            console.error('Error fetching sensor data:', err);
+          } else {
+            socket.emit('sensorDataUpdate', results);
+          }
+        });
+      }, 5000); // Adjust the interval as needed
+
+      socket.on('disconnect', () => {
+        clearInterval(interval);
+        console.log('Client disconnected');
+      });
+    } catch (error) {
+      console.error('Authentication error:', error);
+      socket.disconnect(true);
+    }
   });
 });
-
-// Emit updates to connected clients
-setInterval(async () => {
-    const fetchLatestDataQuery = `
-        SELECT * FROM staff_sensor_data_3 AS s1
-        WHERE s1.id = (
-            SELECT MAX(s2.id)
-            FROM staff_sensor_data_3 AS s2
-            WHERE s2.sensor_api = s1.sensor_api
-        )
-    `;
-
-    db.query(fetchLatestDataQuery, (err, results) => {
-        if (err) {
-            console.error('Error fetching sensor data:', err);
-        } else {
-            io.emit('sensorDataUpdate', results);
-        }
-    });
-}, 5000); // Adjust the interval as needed
 
 // Start the scheduler
 require('./scheduler');

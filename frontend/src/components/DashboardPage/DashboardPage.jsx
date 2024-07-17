@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchData, updateData } from '../../actions/dataActions'; // Import updateData action
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
-import 'eventsource-polyfill';
+import io from 'socket.io-client';
 import './DashboardPage.css';
 
 const DashboardPage = () => {
@@ -17,21 +17,20 @@ const DashboardPage = () => {
     const token = localStorage.getItem('authToken');
     if (token) {
       dispatch(fetchData({ url: '/sensor-data/fetch-last-sensor-data-each-api', token }));
-      
-      const eventSource = new EventSource(`${process.env.REACT_APP_API_URL}/sensor-data/stream`);
 
-      eventSource.onmessage = (event) => {
-        const newData = JSON.parse(event.data);
+      const socket = io(`${process.env.REACT_APP_API_URL}`, {
+        transports: ['websocket'],
+        secure: true,
+      });
+
+      socket.emit('authenticate', token);
+
+      socket.on('sensorDataUpdate', (newData) => {
         dispatch(updateData(newData));
-      };
-
-      eventSource.onerror = (err) => {
-        console.error('EventSource failed:', err);
-        eventSource.close();
-      };
+      });
 
       return () => {
-        eventSource.close();
+        socket.disconnect();
       };
     }
   }, [dispatch]);
