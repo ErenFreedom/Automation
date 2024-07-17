@@ -4,7 +4,7 @@ require('dotenv').config();
 
 const SECRET_KEY = process.env.SECRET_KEY; // Load secret key from .env
 
-// Function to fetch last sensor data
+// Fetch Last Sensor Data for Each API
 exports.fetchLastSensorDataForEachAPI = async (req, res) => {
     const authorizationHeader = req.headers.authorization;
 
@@ -55,7 +55,6 @@ exports.fetchLastSensorDataForEachAPI = async (req, res) => {
     }
 };
 
-// Function to fetch latest data for all APIs
 const fetchLatestDataForAllAPIs = (schemaName, res) => {
     const fetchLatestDataQuery = `
         SELECT * FROM ${schemaName} AS s1
@@ -76,16 +75,18 @@ const fetchLatestDataForAllAPIs = (schemaName, res) => {
     });
 };
 
-// Function to stream sensor data using SSE
+// Stream Sensor Data using SSE
 exports.streamSensorData = (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    const userId = 3; // Hardcoded userId for demonstration; adjust as needed
+    const token = req.query.token;
 
-    // Function to send data to the client
-    const sendData = () => {
+    try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const { userId, email } = decoded;
+
         const schemaName = `staff_sensor_data_${userId}`; // Update this based on your schema naming convention
         const fetchLatestDataQuery = `
             SELECT * FROM ${schemaName} AS s1
@@ -96,22 +97,28 @@ exports.streamSensorData = (req, res) => {
             )
         `;
 
-        db.query(fetchLatestDataQuery, (err, results) => {
-            if (err) {
-                console.error('Error fetching sensor data:', err);
-                res.write(`data: ${JSON.stringify({ error: 'Error fetching data' })}\n\n`);
-            } else {
-                res.write(`data: ${JSON.stringify(results)}\n\n`);
-            }
+        const sendData = () => {
+            db.query(fetchLatestDataQuery, (err, results) => {
+                if (err) {
+                    console.error('Error fetching sensor data:', err);
+                    res.write(`data: ${JSON.stringify({ error: 'Error fetching data' })}\n\n`);
+                } else {
+                    res.write(`data: ${JSON.stringify(results)}\n\n`);
+                }
+            });
+        };
+
+        // Send data every 5 seconds
+        const interval = setInterval(sendData, 5000);
+
+        // Cleanup when client disconnects
+        req.on('close', () => {
+            clearInterval(interval);
+            res.end();
         });
-    };
 
-    // Send data every 5 seconds
-    const interval = setInterval(sendData, 5000);
-
-    // Cleanup when client disconnects
-    req.on('close', () => {
-        clearInterval(interval);
-        res.end();
-    });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(401).json({ message: 'Unauthorized' });
+    }
 };

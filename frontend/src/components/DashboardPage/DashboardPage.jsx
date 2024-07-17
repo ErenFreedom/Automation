@@ -3,8 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchData, updateData } from '../../actions/dataActions'; // Import updateData action
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
-import { EventSourcePolyfill } from 'event-source-polyfill';
-import HttpsProxyAgent from 'https-proxy-agent';
+import 'eventsource-polyfill'; // Import the polyfill
 import './DashboardPage.css';
 
 const DashboardPage = () => {
@@ -19,12 +18,7 @@ const DashboardPage = () => {
     if (token) {
       dispatch(fetchData({ url: '/sensor-data/fetch-last-sensor-data-each-api', token }));
 
-      const options = {
-        headers: { Authorization: `Bearer ${token}` },
-        agent: new HttpsProxyAgent({ rejectUnauthorized: false })
-      };
-
-      const eventSource = new EventSourcePolyfill(`${process.env.REACT_APP_API_URL}/sensor-data/stream`, options);
+      const eventSource = new EventSource(`${process.env.REACT_APP_API_URL}/sensor-data/stream?token=${token}`);
 
       eventSource.onmessage = (event) => {
         const newData = JSON.parse(event.data);
