@@ -8,11 +8,10 @@ export const fetchGraphData = (sensorApi, timeWindow) => async (dispatch) => {
     dispatch({ type: FETCH_GRAPH_DATA_REQUEST });
     try {
         const token = localStorage.getItem('authToken');
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/graph/fetch-data-all-apis-${timeWindow}`, {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/graph/fetch-data-all-apis-${timeWindow}?api=${sensorApi}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
-            params: { api: sensorApi },
         });
         dispatch({ type: FETCH_GRAPH_DATA_SUCCESS, payload: response.data });
     } catch (error) {

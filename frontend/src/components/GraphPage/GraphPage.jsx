@@ -22,7 +22,7 @@ const GraphPage = () => {
     };
 
     useEffect(() => {
-        if (graphData && graphData.data.length > 0) {
+        if (graphData && graphData.data && graphData.data.length > 0) {
             const ctx = document.getElementById('graphCanvas').getContext('2d');
             new Chart(ctx, {
                 type: 'line',
@@ -65,7 +65,7 @@ const GraphPage = () => {
             <div className="graph-container">
                 {loading && <p>Loading data...</p>}
                 {error && <p className="error">{error}</p>}
-                {graphData && (
+                {graphData && graphData.data && (
                     <canvas id="graphCanvas" />
                 )}
             </div>
