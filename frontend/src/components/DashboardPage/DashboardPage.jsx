@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchData, updateData } from '../../actions/dataActions'; // Import updateData action
+import { fetchData, updateData } from '../../actions/dataActions';
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
-import 'eventsource-polyfill'; // Import the polyfill
+import 'event-source-polyfill';
 import './DashboardPage.css';
 
 const DashboardPage = () => {
@@ -48,7 +48,7 @@ const DashboardPage = () => {
             {loading && <p>Loading data...</p>}
             {error && <p className="error">{error}</p>}
             {data && data.map((apiData) => (
-              <Link key={apiData.sensor_api} to={`/${apiData.sensor_api}/${userId}`} className="rectangle-link">
+              <Link key={apiData.sensor_api} to={`/graph/${userId}/${apiData.sensor_api}`} className="rectangle-link">
                 <div className="rectangle">
                   <p>{apiData.sensor_api.replace(/^.*[\\/]/, '')} Value: {apiData.value}</p>
                   <p>Updated At: {apiData.timestamp}</p>

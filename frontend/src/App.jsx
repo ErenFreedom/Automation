@@ -11,7 +11,7 @@ import ClientOtpLoginPage from './components/OtpPage/ClientOtpLoginPage';
 import OtpAccountPage from './components/OtpPage/otpAccountPage'; 
 import OtpPageClient from './components/OtpPage/OtpPageClient';
 import DashboardPage from './components/DashboardPage/DashboardPage';
-import ClientDashboardPage from './components/DashboardPage/ClientDashboardPage'; // Import ClientDashboardPage
+import ClientDashboardPage from './components/DashboardPage/ClientDashboardPage'; 
 import Temperature from './components/ConfigTabs/Temperature';
 import Pressure from './components/ConfigTabs/Pressure';
 import Rh from './components/ConfigTabs/Rh';
@@ -19,9 +19,10 @@ import Humidity from './components/ConfigTabs/Humidity';
 import Report from './components/report/Report';
 import Account from './components/account/Account';
 import Notifications from './components/notifications/Notifications'; 
-import RaiseQuery from './components/ClientQuery/RaiseQuery'; // Import RaiseQuery
-import ClientQueryStatus from './components/ClientQuery/clientQueryStatus'; // Import ClientQueryStatus
-import StaffQueryView from './components/StaffQuery/StaffQueryView'; // Import StaffQueryView
+import RaiseQuery from './components/ClientQuery/RaiseQuery'; 
+import ClientQueryStatus from './components/ClientQuery/clientQueryStatus'; 
+import StaffQueryView from './components/StaffQuery/StaffQueryView'; 
+import GraphPage from './components/GraphPage/GraphPage'; // Import GraphPage
 
 function App() {
   return (
@@ -38,7 +39,7 @@ function App() {
         <Route path="/otp-account" element={<OtpAccountPage />} /> 
         <Route path="/otp-client" element={<OtpPageClient />} /> 
         <Route path="/dashboard/:userId" element={<DashboardPage />} />
-        <Route path="/client-dashboard/:userId" element={<ClientDashboardPage />} /> {/* Add route for ClientDashboardPage */}
+        <Route path="/client-dashboard/:userId" element={<ClientDashboardPage />} /> 
         <Route path="/temperature/:userId" element={<Temperature />} />
         <Route path="/pressure/:userId" element={<Pressure />} />
         <Route path="/rh/:userId" element={<Rh />} />
@@ -46,9 +47,10 @@ function App() {
         <Route path="/report/:userId" element={<Report />} />
         <Route path="/edit-account/:userId" element={<Account />} />
         <Route path="/notifications" element={<Notifications />} /> 
-        <Route path="/raise-query/:userId" element={<RaiseQuery />} /> {/* Add route for RaiseQuery */}
-        <Route path="/query-status/:userId" element={<ClientQueryStatus />} /> {/* Add route for ClientQueryStatus */}
-        <Route path="/staff-queries/:userId" element={<StaffQueryView />} /> {/* Add route for StaffQueryView */}
+        <Route path="/raise-query/:userId" element={<RaiseQuery />} /> 
+        <Route path="/query-status/:userId" element={<ClientQueryStatus />} /> 
+        <Route path="/staff-queries/:userId" element={<StaffQueryView />} /> 
+        <Route path="/graph/:api/:userId" element={<GraphPage />} /> {/* Add route for GraphPage */}
       </Routes>
     </Router>
   );
