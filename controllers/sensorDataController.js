@@ -6,7 +6,13 @@ const SECRET_KEY = process.env.SECRET_KEY; // Load secret key from .env
 
 // Fetch Last Sensor Data for Each API
 exports.fetchLastSensorDataForEachAPI = async (req, res) => {
-    const token = req.headers.authorization.split(' ')[1];
+    const authorizationHeader = req.headers.authorization;
+
+    if (!authorizationHeader) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const token = authorizationHeader.split(' ')[1];
 
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
@@ -75,10 +81,13 @@ exports.streamSensorData = (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
-    if (!token) {
+    const authorizationHeader = req.headers.authorization;
+
+    if (!authorizationHeader) {
         return res.status(401).json({ message: 'Unauthorized' });
     }
+
+    const token = authorizationHeader.split(' ')[1];
 
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
