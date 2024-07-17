@@ -77,3 +77,51 @@ const fetchLatestDataForAllAPIs = (schemaName, res) => {
         res.status(200).json(results);
     });
 };
+
+// Stream Sensor Data using SSE
+exports.streamSensorData = (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    // Use the verified user information from the session
+    const user = req.session.user;
+
+    if (!user) {
+        console.error('User not found in session');
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const { userId, email } = user;
+
+    // Function to send data to the client
+    const sendData = () => {
+        const schemaName = `staff_sensor_data_${userId}`; // Update this based on your schema naming convention
+        const fetchLatestDataQuery = `
+            SELECT * FROM ${schemaName} AS s1
+            WHERE s1.id = (
+                SELECT MAX(s2.id)
+                FROM ${schemaName} AS s2
+                WHERE s2.sensor_api = s1.sensor_api
+            )
+        `;
+
+        db.query(fetchLatestDataQuery, (err, results) => {
+            if (err) {
+                console.error('Error fetching sensor data:', err);
+                res.write(`data: ${JSON.stringify({ error: 'Error fetching data' })}\n\n`);
+            } else {
+                res.write(`data: ${JSON.stringify(results)}\n\n`);
+            }
+        });
+    };
+
+    // Send data every 5 seconds
+    const interval = setInterval(sendData, 5000);
+
+    // Cleanup when client disconnects
+    req.on('close', () => {
+        clearInterval(interval);
+        res.end();
+    });
+};

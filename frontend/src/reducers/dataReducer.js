@@ -20,8 +20,7 @@ const dataReducer = (state = initialState, action) => {
       case FETCH_DATA_FAILURE:
           return { ...state, loading: false, error: action.payload };
       case UPDATE_DATA: // Handle new action type
-          // Appending new data to the existing state
-          return { ...state, data: [...state.data, ...action.payload] };
+          return { ...state, data: action.payload };
       default:
           return state;
   }

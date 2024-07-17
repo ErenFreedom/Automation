@@ -7,7 +7,6 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const session = require('express-session');
-const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const app = express();
@@ -21,7 +20,6 @@ const sslOptions = {
 
 // Create HTTPS server
 const server = https.createServer(sslOptions, app);
-const io = require('socket.io')(server); // Initialize socket.io
 
 const authRoutes = require('./routes/authRoutes');
 const authClientRoutes = require('./routes/authClientRoutes');
@@ -57,7 +55,7 @@ app.use(cors({
 
 // Session management
 app.use(session({
-  secret: 'your_secret_key',
+  secret: process.env.SECRET_KEY,
   resave: false,
   saveUninitialized: true,
   cookie: { secure: false, sameSite: 'none' } // Ensure cookies are sent with cross-site requests
@@ -90,48 +88,6 @@ app.use('/api', backdoorRoutes);
 app.use('/api', sensorRoutes);
 app.use('/api', cloudRoutes);
 app.use('/api/sensor-data', sensorDataRoutes);
-
-// Socket.io connection
-io.on('connection', (socket) => {
-  console.log('New client connected');
-
-  // Listen for authentication
-  socket.on('authenticate', (token) => {
-    try {
-      const decoded = jwt.verify(token, process.env.SECRET_KEY);
-      const { userId } = decoded;
-      socket.userId = userId; // Store userId in socket session
-
-      // Emit updates to the authenticated client
-      const interval = setInterval(async () => {
-        const fetchLatestDataQuery = `
-          SELECT * FROM staff_sensor_data_${userId} AS s1
-          WHERE s1.id = (
-            SELECT MAX(s2.id)
-            FROM staff_sensor_data_${userId} AS s2
-            WHERE s2.sensor_api = s1.sensor_api
-          )
-        `;
-
-        db.query(fetchLatestDataQuery, (err, results) => {
-          if (err) {
-            console.error('Error fetching sensor data:', err);
-          } else {
-            socket.emit('sensorDataUpdate', results);
-          }
-        });
-      }, 5000); // Adjust the interval as needed
-
-      socket.on('disconnect', () => {
-        clearInterval(interval);
-        console.log('Client disconnected');
-      });
-    } catch (error) {
-      console.error('Authentication error:', error);
-      socket.disconnect(true);
-    }
-  });
-});
 
 // Start the scheduler
 require('./scheduler');
