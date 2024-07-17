@@ -4,8 +4,8 @@ require('dotenv').config();
 
 const SECRET_KEY = process.env.SECRET_KEY; // Load secret key from .env
 
-// Combined function to fetch last sensor data and stream sensor data using SSE
-exports.fetchAndStreamSensorData = async (req, res) => {
+// Function to fetch last sensor data
+exports.fetchLastSensorDataForEachAPI = async (req, res) => {
     const authorizationHeader = req.headers.authorization;
 
     if (!authorizationHeader) {
@@ -31,7 +31,7 @@ exports.fetchAndStreamSensorData = async (req, res) => {
             if (staffResults.length > 0) {
                 // User is in the staff table
                 const schemaName = `staff_sensor_data_${userId}`;
-                handleDataFetchingAndStreaming(schemaName, req, res);
+                fetchLatestDataForAllAPIs(schemaName, res);
             } else {
                 db.query(checkClientQuery, [email], (err, clientResults) => {
                     if (err) {
@@ -42,7 +42,7 @@ exports.fetchAndStreamSensorData = async (req, res) => {
                     if (clientResults.length > 0) {
                         // User is in the clients table
                         const schemaName = `client_sensor_data_${userId}`;
-                        handleDataFetchingAndStreaming(schemaName, req, res);
+                        fetchLatestDataForAllAPIs(schemaName, res);
                     } else {
                         res.status(404).json({ message: 'User not found' });
                     }
@@ -55,16 +55,7 @@ exports.fetchAndStreamSensorData = async (req, res) => {
     }
 };
 
-const handleDataFetchingAndStreaming = (schemaName, req, res) => {
-    if (req.path.endsWith('/fetch-last-sensor-data-each-api')) {
-        fetchLatestDataForAllAPIs(schemaName, res);
-    } else if (req.path.endsWith('/stream')) {
-        streamSensorData(schemaName, req, res);
-    } else {
-        res.status(400).json({ message: 'Invalid request' });
-    }
-};
-
+// Function to fetch latest data for all APIs
 const fetchLatestDataForAllAPIs = (schemaName, res) => {
     const fetchLatestDataQuery = `
         SELECT * FROM ${schemaName} AS s1
@@ -85,12 +76,17 @@ const fetchLatestDataForAllAPIs = (schemaName, res) => {
     });
 };
 
-const streamSensorData = (schemaName, req, res) => {
+// Function to stream sensor data using SSE
+exports.streamSensorData = (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
+    const userId = 3; // Hardcoded userId for demonstration; adjust as needed
+
+    // Function to send data to the client
     const sendData = () => {
+        const schemaName = `staff_sensor_data_${userId}`; // Update this based on your schema naming convention
         const fetchLatestDataQuery = `
             SELECT * FROM ${schemaName} AS s1
             WHERE s1.id = (
