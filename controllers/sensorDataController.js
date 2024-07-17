@@ -31,7 +31,7 @@ exports.fetchAndStreamSensorData = async (req, res) => {
             if (staffResults.length > 0) {
                 // User is in the staff table
                 const schemaName = `staff_sensor_data_${userId}`;
-                handleDataFetchingAndStreaming(schemaName, res);
+                handleDataFetchingAndStreaming(schemaName, req, res);
             } else {
                 db.query(checkClientQuery, [email], (err, clientResults) => {
                     if (err) {
@@ -42,7 +42,7 @@ exports.fetchAndStreamSensorData = async (req, res) => {
                     if (clientResults.length > 0) {
                         // User is in the clients table
                         const schemaName = `client_sensor_data_${userId}`;
-                        handleDataFetchingAndStreaming(schemaName, res);
+                        handleDataFetchingAndStreaming(schemaName, req, res);
                     } else {
                         res.status(404).json({ message: 'User not found' });
                     }
@@ -55,11 +55,11 @@ exports.fetchAndStreamSensorData = async (req, res) => {
     }
 };
 
-const handleDataFetchingAndStreaming = (schemaName, res) => {
-    if (res.req.path.endsWith('/fetch-last-sensor-data-each-api')) {
+const handleDataFetchingAndStreaming = (schemaName, req, res) => {
+    if (req.path.endsWith('/fetch-last-sensor-data-each-api')) {
         fetchLatestDataForAllAPIs(schemaName, res);
-    } else if (res.req.path.endsWith('/stream')) {
-        streamSensorData(schemaName, res);
+    } else if (req.path.endsWith('/stream')) {
+        streamSensorData(schemaName, req, res);
     } else {
         res.status(400).json({ message: 'Invalid request' });
     }
@@ -85,7 +85,7 @@ const fetchLatestDataForAllAPIs = (schemaName, res) => {
     });
 };
 
-const streamSensorData = (schemaName, res) => {
+const streamSensorData = (schemaName, req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
@@ -114,7 +114,7 @@ const streamSensorData = (schemaName, res) => {
     const interval = setInterval(sendData, 5000);
 
     // Cleanup when client disconnects
-    res.req.on('close', () => {
+    req.on('close', () => {
         clearInterval(interval);
         res.end();
     });
