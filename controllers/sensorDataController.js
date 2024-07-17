@@ -75,7 +75,11 @@ exports.streamSensorData = (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    const token = req.headers.authorization.split(' ')[1];
+    const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
+    if (!token) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
         const { userId, email } = decoded;
