@@ -50,7 +50,7 @@ function App() {
         <Route path="/raise-query/:userId" element={<RaiseQuery />} /> 
         <Route path="/query-status/:userId" element={<ClientQueryStatus />} /> 
         <Route path="/staff-queries/:userId" element={<StaffQueryView />} /> 
-        <Route path="/graph/:api/:userId" element={<GraphPage />} /> {/* Add route for GraphPage */}
+        <Route path="/graph/:userId/:sensorApi" element={<GraphPage />} /> {/* Add route for GraphPage */}
       </Routes>
     </Router>
   );

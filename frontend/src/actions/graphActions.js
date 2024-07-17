@@ -4,14 +4,15 @@ export const FETCH_GRAPH_DATA_REQUEST = 'FETCH_GRAPH_DATA_REQUEST';
 export const FETCH_GRAPH_DATA_SUCCESS = 'FETCH_GRAPH_DATA_SUCCESS';
 export const FETCH_GRAPH_DATA_FAILURE = 'FETCH_GRAPH_DATA_FAILURE';
 
-export const fetchGraphData = (api, timeWindow) => async (dispatch) => {
+export const fetchGraphData = (sensorApi, timeWindow) => async (dispatch) => {
     dispatch({ type: FETCH_GRAPH_DATA_REQUEST });
     try {
         const token = localStorage.getItem('authToken');
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/graph/fetch-data-all-apis-${timeWindow}?api=${api}`, {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/graph/fetch-data-all-apis-${timeWindow}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
+            params: { api: sensorApi },
         });
         dispatch({ type: FETCH_GRAPH_DATA_SUCCESS, payload: response.data });
     } catch (error) {

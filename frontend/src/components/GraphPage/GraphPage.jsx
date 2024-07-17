@@ -6,7 +6,7 @@ import './GraphPage.css';
 import Chart from 'chart.js/auto';
 
 const GraphPage = () => {
-    const { api, userId } = useParams();
+    const { sensorApi, userId } = useParams();
     const dispatch = useDispatch();
     const graphData = useSelector((state) => state.graph.data);
     const loading = useSelector((state) => state.graph.loading);
@@ -14,8 +14,8 @@ const GraphPage = () => {
     const [timeWindow, setTimeWindow] = useState('1day');
 
     useEffect(() => {
-        dispatch(fetchGraphData(api, timeWindow));
-    }, [dispatch, api, timeWindow]);
+        dispatch(fetchGraphData(sensorApi, timeWindow));
+    }, [dispatch, sensorApi, timeWindow]);
 
     const handleTimeWindowChange = (event) => {
         setTimeWindow(event.target.value);
@@ -29,7 +29,7 @@ const GraphPage = () => {
                 data: {
                     labels: graphData.data.map(item => new Date(item.timestamp).toLocaleString()),
                     datasets: [{
-                        label: api,
+                        label: sensorApi,
                         data: graphData.data.map(item => item.value),
                         borderColor: 'rgba(75, 192, 192, 1)',
                         borderWidth: 1,
@@ -51,7 +51,7 @@ const GraphPage = () => {
                 }
             });
         }
-    }, [graphData, api]);
+    }, [graphData, sensorApi]);
 
     return (
         <div className="graph-page-container">
