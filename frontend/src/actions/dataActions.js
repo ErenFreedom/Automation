@@ -3,6 +3,7 @@ import axios from 'axios';
 export const FETCH_DATA_REQUEST = 'FETCH_DATA_REQUEST';
 export const FETCH_DATA_SUCCESS = 'FETCH_DATA_SUCCESS';
 export const FETCH_DATA_FAILURE = 'FETCH_DATA_FAILURE';
+export const UPDATE_DATA = 'UPDATE_DATA'; // New action type
 
 export const fetchData = ({ url, token }) => async (dispatch) => {
     dispatch({ type: FETCH_DATA_REQUEST });
@@ -20,3 +21,9 @@ export const fetchData = ({ url, token }) => async (dispatch) => {
         });
     }
 };
+
+// New action to update data
+export const updateData = (newData) => ({
+    type: UPDATE_DATA,
+    payload: newData,
+});

@@ -19,6 +19,7 @@ const sslOptions = {
 
 // Create HTTPS server
 const server = https.createServer(sslOptions, app);
+const io = require('socket.io')(server); // Initialize socket.io
 
 const authRoutes = require('./routes/authRoutes');
 const authClientRoutes = require('./routes/authClientRoutes');
@@ -28,7 +29,6 @@ const latestDataRoutes = require('./routes/latestDataRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const graphRoutes = require('./routes/graphRoutes');
 const accountRoutes = require('./routes/accountRoutes');
-//const monitorRoutes = require('./routes/monitorRoutes');
 const queryRoutes = require('./routes/queryRoutes');
 const statusRoutes = require('./routes/statusRoutes');
 const clientRoutes = require('./routes/clientRoutes');
@@ -72,7 +72,6 @@ app.use('/api', latestDataRoutes); // Adding the new route for latest data
 app.use('/api', reportRoutes); // Adding the new route for report generation
 app.use('/api/graph', graphRoutes);// Adding the new route for graph data
 app.use('/api', accountRoutes); // Adding the new route for account actions
-//app.use('/api', monitorRoutes); // Adding the new route for monitoring
 app.use('/api', queryRoutes); // Adding the new route for queries
 app.use('/api', statusRoutes); // Adding the new route for status management
 app.use('/api', clientRoutes);
@@ -82,38 +81,33 @@ app.use('/api', sensorRoutes);
 app.use('/api', cloudRoutes);
 app.use('/api/sensor-data', sensorDataRoutes);
 
-// SSE endpoint
-app.get('/api/sensor-data/stream', (req, res) => {
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.flushHeaders();
-
-  const fetchLatestDataQuery = `
-      SELECT * FROM staff_sensor_data_3 AS s1
-      WHERE s1.id = (
-          SELECT MAX(s2.id)
-          FROM staff_sensor_data_3 AS s2
-          WHERE s2.sensor_api = s1.sensor_api
-      )
-  `;
-
-  const intervalId = setInterval(() => {
-    db.query(fetchLatestDataQuery, (err, results) => {
-      if (err) {
-        console.error('Error fetching sensor data:', err);
-        res.write(`event: error\ndata: ${JSON.stringify({ message: 'Error fetching sensor data' })}\n\n`);
-      } else {
-        res.write(`data: ${JSON.stringify(results)}\n\n`);
-      }
-    });
-  }, 5000); // Adjust the interval as needed
-
-  req.on('close', () => {
-    clearInterval(intervalId);
-    res.end();
+// Socket.io connection
+io.on('connection', (socket) => {
+  console.log('New client connected');
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
   });
 });
+
+// Emit updates to connected clients
+setInterval(async () => {
+    const fetchLatestDataQuery = `
+        SELECT * FROM staff_sensor_data_3 AS s1
+        WHERE s1.id = (
+            SELECT MAX(s2.id)
+            FROM staff_sensor_data_3 AS s2
+            WHERE s2.sensor_api = s1.sensor_api
+        )
+    `;
+
+    db.query(fetchLatestDataQuery, (err, results) => {
+        if (err) {
+            console.error('Error fetching sensor data:', err);
+        } else {
+            io.emit('sensorDataUpdate', results);
+        }
+    });
+}, 5000); // Adjust the interval as needed
 
 // Start the scheduler
 require('./scheduler');

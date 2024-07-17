@@ -1,64 +1,37 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useQuery, useQueryClient } from 'react-query';
-import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchData, updateData } from '../../actions/dataActions'; // Import updateData action
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
+import 'eventsource-polyfill';
 import './DashboardPage.css';
-
-const fetchData = async ({ queryKey }) => {
-  const { data } = await axios.get(queryKey[0], {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-    },
-  });
-  return data;
-};
 
 const DashboardPage = () => {
   const { userId } = useParams();
-  const queryClient = useQueryClient();
-  const [data, setData] = useState([]);
-  const { data: initialData, error, isLoading } = useQuery(
-    ['/sensor-data/fetch-last-sensor-data-each-api'],
-    fetchData,
-    {
-      staleTime: Infinity,
-      cacheTime: Infinity,
-    }
-  );
+  const dispatch = useDispatch();
+  const data = useSelector((state) => state.data.data);
+  const loading = useSelector((state) => state.data.loading);
+  const error = useSelector((state) => state.data.error);
 
   useEffect(() => {
-    if (initialData) {
-      setData(initialData);
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      dispatch(fetchData({ url: '/sensor-data/fetch-last-sensor-data-each-api', token }));
+      
+      const eventSource = new EventSource(`${process.env.REACT_APP_API_URL}/sensor-data/stream`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      eventSource.onmessage = (event) => {
+        const newData = JSON.parse(event.data);
+        dispatch(updateData(newData));
+      };
+
+      return () => {
+        eventSource.close();
+      };
     }
-  }, [initialData]);
-
-  useEffect(() => {
-    const eventSource = new EventSource(`${process.env.REACT_APP_API_URL}/sensor-data/stream`);
-
-    eventSource.onmessage = (event) => {
-      const newData = JSON.parse(event.data);
-      setData(newData);
-      queryClient.setQueryData(['/sensor-data/fetch-last-sensor-data-each-api'], newData);
-    };
-
-    eventSource.onerror = (err) => {
-      console.error('EventSource failed:', err);
-      eventSource.close();
-    };
-
-    return () => {
-      eventSource.close();
-    };
-  }, [queryClient]);
-
-  if (isLoading) {
-    return <p>Loading data...</p>;
-  }
-
-  if (error) {
-    return <p className="error">{error.message}</p>;
-  }
+  }, [dispatch]);
 
   return (
     <div className="dashboard-page-container">
@@ -69,6 +42,8 @@ const DashboardPage = () => {
       <div className="dashboard-page">
         <div className="dashboard-content">
           <div className="rectangles">
+            {loading && <p>Loading data...</p>}
+            {error && <p className="error">{error}</p>}
             {data && data.map((apiData) => (
               <Link key={apiData.sensor_api} to={`/${apiData.sensor_api}/${userId}`} className="rectangle-link">
                 <div className="rectangle">
