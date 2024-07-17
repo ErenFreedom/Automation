@@ -70,7 +70,7 @@ const GraphPage = () => {
                 )}
             </div>
             <div className="metrics-container">
-                {graphData && (
+                {graphData && graphData.metrics && (
                     <>
                         <p>Average: {graphData.metrics.average}</p>
                         <p>Max: {graphData.metrics.max}</p>
