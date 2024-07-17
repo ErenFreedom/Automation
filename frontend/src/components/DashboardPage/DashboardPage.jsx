@@ -18,13 +18,16 @@ const DashboardPage = () => {
     if (token) {
       dispatch(fetchData({ url: '/sensor-data/fetch-last-sensor-data-each-api', token }));
       
-      const eventSource = new EventSource(`${process.env.REACT_APP_API_URL}/sensor-data/stream`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const eventSource = new EventSource(`${process.env.REACT_APP_API_URL}/sensor-data/stream`);
 
       eventSource.onmessage = (event) => {
         const newData = JSON.parse(event.data);
         dispatch(updateData(newData));
+      };
+
+      eventSource.onerror = (err) => {
+        console.error('EventSource failed:', err);
+        eventSource.close();
       };
 
       return () => {

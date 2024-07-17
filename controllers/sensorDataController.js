@@ -84,6 +84,7 @@ exports.streamSensorData = (req, res) => {
     const authorizationHeader = req.headers.authorization;
 
     if (!authorizationHeader) {
+        console.error('Missing authorization header');
         return res.status(401).json({ message: 'Unauthorized' });
     }
 
@@ -92,6 +93,8 @@ exports.streamSensorData = (req, res) => {
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
         const { userId, email } = decoded;
+
+        console.log('Decoded token:', decoded);
 
         // Function to send data to the client
         const sendData = () => {
@@ -125,7 +128,7 @@ exports.streamSensorData = (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error verifying token:', error);
         res.status(401).json({ message: 'Unauthorized' });
     }
 };
