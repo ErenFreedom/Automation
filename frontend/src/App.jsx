@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
 import LandingPage from './components/LandingPage/LandingPage';
 import RegisterPage from './components/RegisterPage/RegisterPage';
 import RegisterClientPage from './components/RegisterPage/ClientRegisterPage';
@@ -23,34 +24,38 @@ import RaiseQuery from './components/ClientQuery/RaiseQuery'; // Import RaiseQue
 import ClientQueryStatus from './components/ClientQuery/clientQueryStatus'; // Import ClientQueryStatus
 import StaffQueryView from './components/StaffQuery/StaffQueryView'; // Import StaffQueryView
 
+const queryClient = new QueryClient();
+
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" exact element={<LandingPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/register-client" element={<RegisterClientPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/login-client" element={<ClientLoginPage />} />
-        <Route path="/otp" element={<OtpPage />} />
-        <Route path="/otp-login" element={<OtpLoginPage />} />
-        <Route path="/client-otp-login" element={<ClientOtpLoginPage />} />
-        <Route path="/otp-account" element={<OtpAccountPage />} /> 
-        <Route path="/otp-client" element={<OtpPageClient />} /> 
-        <Route path="/dashboard/:userId" element={<DashboardPage />} />
-        <Route path="/client-dashboard/:userId" element={<ClientDashboardPage />} /> {/* Add route for ClientDashboardPage */}
-        <Route path="/temperature/:userId" element={<Temperature />} />
-        <Route path="/pressure/:userId" element={<Pressure />} />
-        <Route path="/rh/:userId" element={<Rh />} />
-        <Route path="/humidity/:userId" element={<Humidity />} />
-        <Route path="/report/:userId" element={<Report />} />
-        <Route path="/edit-account/:userId" element={<Account />} />
-        <Route path="/notifications" element={<Notifications />} /> 
-        <Route path="/raise-query/:userId" element={<RaiseQuery />} /> {/* Add route for RaiseQuery */}
-        <Route path="/query-status/:userId" element={<ClientQueryStatus />} /> {/* Add route for ClientQueryStatus */}
-        <Route path="/staff-queries/:userId" element={<StaffQueryView />} /> {/* Add route for StaffQueryView */}
-      </Routes>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <Routes>
+          <Route path="/" exact element={<LandingPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/register-client" element={<RegisterClientPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login-client" element={<ClientLoginPage />} />
+          <Route path="/otp" element={<OtpPage />} />
+          <Route path="/otp-login" element={<OtpLoginPage />} />
+          <Route path="/client-otp-login" element={<ClientOtpLoginPage />} />
+          <Route path="/otp-account" element={<OtpAccountPage />} /> 
+          <Route path="/otp-client" element={<OtpPageClient />} /> 
+          <Route path="/dashboard/:userId" element={<DashboardPage />} />
+          <Route path="/client-dashboard/:userId" element={<ClientDashboardPage />} /> {/* Add route for ClientDashboardPage */}
+          <Route path="/temperature/:userId" element={<Temperature />} />
+          <Route path="/pressure/:userId" element={<Pressure />} />
+          <Route path="/rh/:userId" element={<Rh />} />
+          <Route path="/humidity/:userId" element={<Humidity />} />
+          <Route path="/report/:userId" element={<Report />} />
+          <Route path="/edit-account/:userId" element={<Account />} />
+          <Route path="/notifications" element={<Notifications />} /> 
+          <Route path="/raise-query/:userId" element={<RaiseQuery />} /> {/* Add route for RaiseQuery */}
+          <Route path="/query-status/:userId" element={<ClientQueryStatus />} /> {/* Add route for ClientQueryStatus */}
+          <Route path="/staff-queries/:userId" element={<StaffQueryView />} /> {/* Add route for StaffQueryView */}
+        </Routes>
+      </Router>
+    </QueryClientProvider>
   );
 }
 
