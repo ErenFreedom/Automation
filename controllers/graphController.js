@@ -1,6 +1,5 @@
 const db = require('../config/db');
 const jwt = require('jsonwebtoken');
-const moment = require('moment');
 const SECRET_KEY = process.env.SECRET_KEY || 'xC8!vH7zD@iM9wT1&fQ#4sE2kU$3bN6^lR'; // Ensure you have a secret key
 
 const identifyTable = (email, callback) => {
@@ -31,7 +30,7 @@ const identifyTable = (email, callback) => {
 
 // Fetch all data from the sensor data table
 const fetchAllData = (table, callback) => {
-    const query = `SELECT sensor_api, type, value, quality, qualityGood, timestamp FROM ${table} ORDER BY id ASC`;
+    const query = `SELECT sensor_api, value, timestamp FROM ${table} ORDER BY id ASC`;
 
     db.query(query, (err, results) => {
         if (err) {
@@ -44,69 +43,7 @@ const fetchAllData = (table, callback) => {
     });
 };
 
-const filterDataByTimeWindow = (data, timeWindow) => {
-    if (data.length === 0) return [];
-
-    const endTime = moment();
-    let startTime;
-
-    switch (timeWindow) {
-        case '1day':
-            startTime = endTime.clone().subtract(1, 'days');
-            break;
-        case '1week':
-            startTime = endTime.clone().subtract(1, 'weeks');
-            break;
-        case '1month':
-            startTime = endTime.clone().subtract(1, 'months');
-            break;
-        default:
-            return data;
-    }
-
-    console.log(`Filtering data from ${startTime.toISOString()} to ${endTime.toISOString()}`);
-    return data.filter(item => {
-        const itemTime = moment(item.timestamp);
-        const isWithinTimeWindow = itemTime.isBetween(startTime, endTime);
-        if (!isWithinTimeWindow) {
-            console.log(`Excluding data point with timestamp: ${item.timestamp}`);
-        }
-        return isWithinTimeWindow;
-    });
-};
-
-const calculateMetrics = (data) => {
-    const values = data.map(item => item.value);
-    if (values.length === 0) {
-        return {
-            average: 'NaN',
-            max: '-Infinity',
-            min: 'Infinity',
-            range: '-Infinity',
-            variance: 'NaN',
-            stddev: 'NaN'
-        };
-    }
-
-    const sum = values.reduce((a, b) => a + b, 0);
-    const average = (sum / values.length).toFixed(2);
-    const max = Math.max(...values).toFixed(2);
-    const min = Math.min(...values).toFixed(2);
-    const range = (max - min).toFixed(2);
-    const variance = (values.reduce((a, b) => a + Math.pow(b - average, 2), 0) / values.length).toFixed(2);
-    const stddev = Math.sqrt(variance).toFixed(2);
-
-    return {
-        average,
-        max,
-        min,
-        range,
-        variance,
-        stddev
-    };
-};
-
-const getDataForAllAPIs = (req, res, timeWindow) => {
+const getDataForAllAPIs = (req, res) => {
     const token = req.headers.authorization.split(' ')[1];
 
     try {
@@ -135,11 +72,10 @@ const getDataForAllAPIs = (req, res, timeWindow) => {
                     return acc;
                 }, {});
 
-                const apiData = Object.keys(groupedData).map(api => {
-                    const filteredData = filterDataByTimeWindow(groupedData[api], timeWindow);
-                    const metrics = calculateMetrics(filteredData);
-                    return { api, data: filteredData.map(item => ({ value: item.value, timestamp: item.timestamp })), metrics };
-                });
+                const apiData = Object.keys(groupedData).map(api => ({
+                    api,
+                    data: groupedData[api],
+                }));
 
                 console.log(`Sending data for ${apiData.length} APIs`);
                 res.json(apiData);
@@ -151,6 +87,6 @@ const getDataForAllAPIs = (req, res, timeWindow) => {
     }
 };
 
-exports.getDataForAllAPIs1Day = (req, res) => getDataForAllAPIs(req, res, '1day');
-exports.getDataForAllAPIs1Week = (req, res) => getDataForAllAPIs(req, res, '1week');
-exports.getDataForAllAPIs1Month = (req, res) => getDataForAllAPIs(req, res, '1month');
+exports.getDataForAllAPIs1Day = (req, res) => getDataForAllAPIs(req, res);
+exports.getDataForAllAPIs1Week = (req, res) => getDataForAllAPIs(req, res);
+exports.getDataForAllAPIs1Month = (req, res) => getDataForAllAPIs(req, res);

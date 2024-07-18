@@ -8,7 +8,7 @@ import 'chartjs-adapter-date-fns'; // Import the date adapter
 Chart.register(...registerables);
 
 const GraphPage = () => {
-    const { sensorApi, userId } = useParams();
+    const { sensorApi } = useParams();
     const dispatch = useDispatch();
     const graphData = useSelector((state) => state.graph.data);
     const loading = useSelector((state) => state.graph.loading);
@@ -23,6 +23,29 @@ const GraphPage = () => {
         setTimeWindow(event.target.value);
     };
 
+    const filterDataByTimeWindow = (data) => {
+        if (!data || data.length === 0) return [];
+
+        const endTime = new Date(data[data.length - 1].timestamp);
+        let startTime;
+
+        switch (timeWindow) {
+            case '1day':
+                startTime = new Date(endTime.getTime() - 24 * 60 * 60 * 1000);
+                break;
+            case '1week':
+                startTime = new Date(endTime.getTime() - 7 * 24 * 60 * 60 * 1000);
+                break;
+            case '1month':
+                startTime = new Date(endTime.getTime() - 30 * 24 * 60 * 60 * 1000);
+                break;
+            default:
+                return data;
+        }
+
+        return data.filter(item => new Date(item.timestamp) >= startTime && new Date(item.timestamp) <= endTime);
+    };
+
     useEffect(() => {
         if (graphData && graphData.length > 0) {
             const ctx = document.getElementById('graphCanvas').getContext('2d');
@@ -32,7 +55,8 @@ const GraphPage = () => {
                 window.myChart.destroy();
             }
 
-            const sortedData = graphData[0].data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            const sortedData = filterDataByTimeWindow(graphData.find(apiData => apiData.api === sensorApi).data)
+                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
             const datasets = [{
                 label: sensorApi,
@@ -94,7 +118,7 @@ const GraphPage = () => {
                 }
             });
         }
-    }, [graphData, sensorApi]);
+    }, [graphData, sensorApi, timeWindow]);
 
     return (
         <div className="graph-page-container">
@@ -116,12 +140,12 @@ const GraphPage = () => {
                 {graphData && graphData.length > 0 && (
                     <div>
                         <h3>Metrics for {sensorApi}</h3>
-                        <p>Average: {graphData[0].metrics.average}</p>
-                        <p>Max: {graphData[0].metrics.max}</p>
-                        <p>Min: {graphData[0].metrics.min}</p>
-                        <p>Range: {graphData[0].metrics.range}</p>
-                        <p>Variance: {graphData[0].metrics.variance}</p>
-                        <p>Standard Deviation: {graphData[0].metrics.stddev}</p>
+                        <p>Average: {graphData.find(apiData => apiData.api === sensorApi).metrics.average}</p>
+                        <p>Max: {graphData.find(apiData => apiData.api === sensorApi).metrics.max}</p>
+                        <p>Min: {graphData.find(apiData => apiData.api === sensorApi).metrics.min}</p>
+                        <p>Range: {graphData.find(apiData => apiData.api === sensorApi).metrics.range}</p>
+                        <p>Variance: {graphData.find(apiData => apiData.api === sensorApi).metrics.variance}</p>
+                        <p>Standard Deviation: {graphData.find(apiData => apiData.api === sensorApi).metrics.stddev}</p>
                     </div>
                 )}
             </div>
