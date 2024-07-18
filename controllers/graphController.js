@@ -112,8 +112,7 @@ const getDataForAllAPIs = (req, res, timeWindow) => {
             fetchAllData(table, (err, data) => {
                 if (err) return res.status(500).send('Error fetching data');
 
-                const filteredData = filterDataByTimeWindow(data, timeWindow);
-                const groupedData = filteredData.reduce((acc, item) => {
+                const groupedData = data.reduce((acc, item) => {
                     if (!acc[item.sensor_api]) {
                         acc[item.sensor_api] = [];
                     }
@@ -121,13 +120,13 @@ const getDataForAllAPIs = (req, res, timeWindow) => {
                     return acc;
                 }, {});
 
-                const result = Object.keys(groupedData).map(api => ({
-                    api,
-                    data: groupedData[api],
-                    metrics: calculateMetrics(groupedData[api])
-                }));
+                const apiDataPromises = Object.keys(groupedData).map(api => {
+                    const filteredData = filterDataByTimeWindow(groupedData[api], timeWindow);
+                    const metrics = calculateMetrics(filteredData);
+                    return { api, data: filteredData, metrics };
+                });
 
-                res.json(result);
+                res.json(apiDataPromises);
             });
         });
     } catch (error) {
