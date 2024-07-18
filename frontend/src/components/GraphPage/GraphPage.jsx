@@ -47,12 +47,20 @@ const GraphPage = () => {
         return data.filter(item => new Date(item.timestamp) >= startTime);
     };
 
+    const convertTimestamps = (data) => {
+        return data.map(item => ({
+            ...item,
+            timestamp: new Date(item.timestamp).toISOString()
+        }));
+    };
+
     useEffect(() => {
         if (graphData && graphData.length > 0) {
             const ctx = chartRef.current.getContext('2d');
             const apiData = graphData.find(apiData => apiData.api === sensorApi);
             if (apiData) {
-                const filteredData = filterDataByTimeWindow(apiData.data);
+                const convertedData = convertTimestamps(apiData.data);
+                const filteredData = filterDataByTimeWindow(convertedData);
                 const sortedData = filteredData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
                 const datasets = [{
                     label: apiData.api,
