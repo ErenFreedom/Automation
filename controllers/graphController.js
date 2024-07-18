@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const jwt = require('jsonwebtoken');
+const moment = require('moment');
 const SECRET_KEY = process.env.SECRET_KEY || 'xC8!vH7zD@iM9wT1&fQ#4sE2kU$3bN6^lR'; // Ensure you have a secret key
 
 const identifyTable = (email, callback) => {
@@ -46,27 +47,27 @@ const fetchAllData = (table, callback) => {
 const filterDataByTimeWindow = (data, timeWindow) => {
     if (data.length === 0) return [];
 
-    const endTime = new Date();
+    const endTime = moment();
     let startTime;
 
     switch (timeWindow) {
         case '1day':
-            startTime = new Date(endTime.getTime() - 24 * 60 * 60 * 1000);
+            startTime = endTime.clone().subtract(1, 'days');
             break;
         case '1week':
-            startTime = new Date(endTime.getTime() - 7 * 24 * 60 * 60 * 1000);
+            startTime = endTime.clone().subtract(1, 'weeks');
             break;
         case '1month':
-            startTime = new Date(endTime.getTime() - 30 * 24 * 60 * 60 * 1000);
+            startTime = endTime.clone().subtract(1, 'months');
             break;
         default:
             return data;
     }
 
-    console.log(`Filtering data from ${startTime} to ${endTime}`);
+    console.log(`Filtering data from ${startTime.toISOString()} to ${endTime.toISOString()}`);
     return data.filter(item => {
-        const itemTime = new Date(item.timestamp);
-        const isWithinTimeWindow = itemTime >= startTime && itemTime <= endTime;
+        const itemTime = moment(item.timestamp);
+        const isWithinTimeWindow = itemTime.isBetween(startTime, endTime);
         if (!isWithinTimeWindow) {
             console.log(`Excluding data point with timestamp: ${item.timestamp}`);
         }
