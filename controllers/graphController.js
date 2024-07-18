@@ -43,7 +43,28 @@ const fetchAllData = (table, callback) => {
     });
 };
 
-const getDataForAllAPIs = (req, res) => {
+const filterDataByTimeWindow = (data, timeWindow) => {
+    const now = new Date();
+    let startTime;
+
+    switch (timeWindow) {
+        case '1day':
+            startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            break;
+        case '1week':
+            startTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            break;
+        case '1month':
+            startTime = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            break;
+        default:
+            startTime = new Date(0); // Default to all data if no time window is specified
+    }
+
+    return data.filter(item => new Date(item.timestamp) >= startTime && new Date(item.timestamp) <= now);
+};
+
+const getDataForAllAPIs = (req, res, timeWindow) => {
     const token = req.headers.authorization.split(' ')[1];
 
     try {
@@ -74,7 +95,7 @@ const getDataForAllAPIs = (req, res) => {
 
                 const apiData = Object.keys(groupedData).map(api => ({
                     api,
-                    data: groupedData[api],
+                    data: filterDataByTimeWindow(groupedData[api], timeWindow),
                 }));
 
                 console.log(`Sending data for ${apiData.length} APIs`);
@@ -87,6 +108,6 @@ const getDataForAllAPIs = (req, res) => {
     }
 };
 
-exports.getDataForAllAPIs1Day = (req, res) => getDataForAllAPIs(req, res);
-exports.getDataForAllAPIs1Week = (req, res) => getDataForAllAPIs(req, res);
-exports.getDataForAllAPIs1Month = (req, res) => getDataForAllAPIs(req, res);
+exports.getDataForAllAPIs1Day = (req, res) => getDataForAllAPIs(req, res, '1day');
+exports.getDataForAllAPIs1Week = (req, res) => getDataForAllAPIs(req, res, '1week');
+exports.getDataForAllAPIs1Month = (req, res) => getDataForAllAPIs(req, res, '1month');
