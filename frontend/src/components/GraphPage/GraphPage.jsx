@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchGraphData } from '../../actions/graphActions';
 import './GraphPage.css';
 import { Chart, registerables } from 'chart.js';
+import 'chartjs-adapter-date-fns'; // Import the date adapter
 Chart.register(...registerables);
 
 const GraphPage = () => {
