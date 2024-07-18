@@ -24,6 +24,13 @@ const GraphPage = () => {
         setTimeWindow(event.target.value);
     };
 
+    const convertTimestamps = (data) => {
+        return data.map(item => ({
+            ...item,
+            humanReadableTimestamp: new Date(item.timestamp).toLocaleString()
+        }));
+    };
+
     const filterDataByTimeWindow = (data) => {
         if (!data || data.length === 0) return [];
 
@@ -52,7 +59,8 @@ const GraphPage = () => {
             const ctx = chartRef.current.getContext('2d');
             const apiData = graphData.find(apiData => apiData.api === sensorApi);
             if (apiData) {
-                const filteredData = filterDataByTimeWindow(apiData.data);
+                const convertedData = convertTimestamps(apiData.data);
+                const filteredData = filterDataByTimeWindow(convertedData);
                 console.log('Filtered Data:', filteredData);
                 const sortedData = filteredData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
                 console.log('Sorted Data:', sortedData);
