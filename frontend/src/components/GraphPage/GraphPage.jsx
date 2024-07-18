@@ -49,7 +49,7 @@ const GraphPage = () => {
     useEffect(() => {
         if (graphData && graphData.length > 0) {
             const sensorData = graphData.find(apiData => apiData.api === sensorApi);
-            if (!sensorData) return;
+            if (!sensorData || !sensorData.data) return;
 
             const ctx = document.getElementById('graphCanvas').getContext('2d');
 
