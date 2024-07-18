@@ -8,7 +8,7 @@ import 'chartjs-adapter-date-fns'; // Import the date adapter
 Chart.register(...registerables);
 
 const GraphPage = () => {
-    const { sensorApi, userId } = useParams();
+    const { sensorApi } = useParams();
     const dispatch = useDispatch();
     const graphData = useSelector((state) => state.graph.data);
     const loading = useSelector((state) => state.graph.loading);
@@ -104,17 +104,19 @@ const GraphPage = () => {
                 {loading && <p>Loading data...</p>}
                 {error && <p className="error">{error}</p>}
                 {graphData && graphData.length > 0 && (
+                    <canvas id={`graphCanvas-${sensorApi}`} className="graph-canvas" />
+                )}
+            </div>
+            <div className="metrics-container">
+                {graphData && graphData.length > 0 && (
                     <div>
-                        <canvas id={`graphCanvas-${sensorApi}`} className="graph-canvas" />
-                        <div className="metrics-container">
-                            <h3>Metrics for {sensorApi}</h3>
-                            <p>Average: {graphData[0].metrics.average}</p>
-                            <p>Max: {graphData[0].metrics.max}</p>
-                            <p>Min: {graphData[0].metrics.min}</p>
-                            <p>Range: {graphData[0].metrics.range}</p>
-                            <p>Variance: {graphData[0].metrics.variance}</p>
-                            <p>Standard Deviation: {graphData[0].metrics.stddev}</p>
-                        </div>
+                        <h3>Metrics for {sensorApi}</h3>
+                        <p>Average: {graphData[0].metrics.average}</p>
+                        <p>Max: {graphData[0].metrics.max}</p>
+                        <p>Min: {graphData[0].metrics.min}</p>
+                        <p>Range: {graphData[0].metrics.range}</p>
+                        <p>Variance: {graphData[0].metrics.variance}</p>
+                        <p>Standard Deviation: {graphData[0].metrics.stddev}</p>
                     </div>
                 )}
             </div>
