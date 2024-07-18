@@ -32,7 +32,10 @@ const GraphPage = () => {
                 window.myChart.destroy();
             }
 
-            const sortedData = graphData[0].data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            const sensorData = graphData.find(data => data.api === sensorApi);
+            if (!sensorData || sensorData.data.length === 0) return;
+
+            const sortedData = sensorData.data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
             const datasets = [{
                 label: sensorApi,

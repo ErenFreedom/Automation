@@ -45,7 +45,7 @@ const fetchUniqueAPIs = (table, callback) => {
 
 // Fetch all data for a specific API
 const fetchAllDataForAPI = (table, api, callback) => {
-    const query = `SELECT sensor_api, type, value, quality, qualityGood, timestamp FROM ${table} WHERE sensor_api = ? ORDER BY id ASC`;
+    const query = `SELECT sensor_api, type, value, quality, qualityGood, timestamp FROM ${table} WHERE sensor_api = ? ORDER BY timestamp ASC`;
 
     db.query(query, [api], (err, results) => {
         if (err) {
@@ -60,7 +60,7 @@ const fetchAllDataForAPI = (table, api, callback) => {
 const filterDataByTimeWindow = (data, timeWindow) => {
     if (data.length === 0) return [];
 
-    const endTime = new Date(data[data.length - 1].timestamp);
+    const endTime = new Date();
     let startTime;
 
     switch (timeWindow) {
@@ -149,7 +149,10 @@ const getDataForAllAPIs = (req, res, timeWindow) => {
                 });
 
                 Promise.all(apiDataPromises)
-                    .then(data => res.json(data))
+                    .then(data => {
+                        const sortedData = data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                        res.json(sortedData);
+                    })
                     .catch(err => {
                         console.error('Error fetching data for APIs:', err);
                         res.status(500).send('Error fetching data for APIs');
