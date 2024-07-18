@@ -28,21 +28,6 @@ const identifyTable = (email, callback) => {
     });
 };
 
-// Fetch unique APIs from the sensor data table
-const fetchUniqueAPIs = (table, callback) => {
-    const query = `SELECT DISTINCT sensor_api FROM ${table}`;
-
-    db.query(query, (err, results) => {
-        if (err) {
-            console.error(`Error fetching unique APIs from table ${table}:`, err);
-            return callback(err);
-        }
-
-        const apis = results.map(row => row.sensor_api);
-        callback(null, apis);
-    });
-};
-
 // Fetch all data for a specific API
 const fetchAllDataForAPI = (table, api, callback) => {
     const query = `SELECT sensor_api, type, value, quality, qualityGood, timestamp FROM ${table} WHERE sensor_api = ? ORDER BY timestamp ASC`;
@@ -136,27 +121,13 @@ const getDataForAllAPIs = (req, res, timeWindow) => {
                 return res.status(500).send('Error identifying table');
             }
 
-            fetchUniqueAPIs(table, (err, apis) => {
-                if (err) return res.status(500).send('Error fetching unique APIs');
-
-                const apiDataPromises = apis.map(api => {
-                    return new Promise((resolve, reject) => {
-                        getFilteredDataForAPI(table, api, timeWindow, (err, data) => {
-                            if (err) return reject(err);
-                            resolve(data);
-                        });
-                    });
-                });
-
-                Promise.all(apiDataPromises)
-                    .then(data => {
-                        const sortedData = data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-                        res.json(sortedData);
-                    })
-                    .catch(err => {
-                        console.error('Error fetching data for APIs:', err);
-                        res.status(500).send('Error fetching data for APIs');
-                    });
+            const sensorApi = req.query.api;
+            getFilteredDataForAPI(table, sensorApi, timeWindow, (err, data) => {
+                if (err) {
+                    console.error('Error fetching data for API:', err);
+                    return res.status(500).send('Error fetching data for API');
+                }
+                res.json([data]); // Wrap in an array to maintain the response structure
             });
         });
     } catch (error) {
