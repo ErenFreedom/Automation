@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchGraphData } from '../../actions/graphActions';
@@ -14,6 +14,8 @@ const GraphPage = () => {
     const loading = useSelector((state) => state.graph.loading);
     const error = useSelector((state) => state.graph.error);
     const [timeWindow, setTimeWindow] = useState('1day');
+
+    const chartRefs = useRef([]);
 
     useEffect(() => {
         dispatch(fetchGraphData(sensorApi, timeWindow));
@@ -46,9 +48,10 @@ const GraphPage = () => {
         return data.filter(item => new Date(item.timestamp) >= startTime);
     };
 
-    const renderCharts = () => {
+    useEffect(() => {
         if (graphData && graphData.length > 0) {
-            return graphData.map(apiData => {
+            graphData.forEach((apiData, index) => {
+                const ctx = chartRefs.current[index].getContext('2d');
                 const filteredData = filterDataByTimeWindow(apiData.data);
                 const sortedData = filteredData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
                 const datasets = [{
@@ -62,52 +65,43 @@ const GraphPage = () => {
                     spanGaps: true, // Handle gaps in the data
                 }];
 
-                return (
-                    <div key={apiData.api} className="chart-container">
-                        <canvas id={`graphCanvas-${apiData.api}`} />
-                        <script>
-                            {(() => {
-                                const ctx = document.getElementById(`graphCanvas-${apiData.api}`).getContext('2d');
-                                new Chart(ctx, {
-                                    type: 'line',
-                                    data: { datasets },
-                                    options: {
-                                        responsive: true,
-                                        maintainAspectRatio: false,
-                                        interaction: { mode: 'index', intersect: false },
-                                        plugins: {
-                                            tooltip: {
-                                                callbacks: {
-                                                    label: function (context) {
-                                                        const date = new Date(context.parsed.x).toLocaleString();
-                                                        const value = context.parsed.y;
-                                                        return `Value: ${value}, Timestamp: ${date}`;
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        scales: {
-                                            x: {
-                                                type: 'time',
-                                                time: { unit: 'hour' },
-                                                title: { display: true, text: 'Time' },
-                                                ticks: { autoSkip: true, maxTicksLimit: 10 }
-                                            },
-                                            y: {
-                                                beginAtZero: true,
-                                                title: { display: true, text: 'Value' }
-                                            }
+                if (ctx) {
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: { datasets },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: { mode: 'index', intersect: false },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            const date = new Date(context.parsed.x).toLocaleString();
+                                            const value = context.parsed.y;
+                                            return `Value: ${value}, Timestamp: ${date}`;
                                         }
                                     }
-                                });
-                            })()}
-                        </script>
-                    </div>
-                );
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    type: 'time',
+                                    time: { unit: 'hour' },
+                                    title: { display: true, text: 'Time' },
+                                    ticks: { autoSkip: true, maxTicksLimit: 10 }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    title: { display: true, text: 'Value' }
+                                }
+                            }
+                        }
+                    });
+                }
             });
         }
-        return null;
-    };
+    }, [graphData, sensorApi, timeWindow]);
 
     return (
         <div className="graph-page-container">
@@ -121,7 +115,9 @@ const GraphPage = () => {
             <div className="graph-container">
                 {loading && <p>Loading data...</p>}
                 {error && <p className="error">{error}</p>}
-                {renderCharts()}
+                {graphData && graphData.length > 0 && graphData.map((apiData, index) => (
+                    <canvas key={apiData.api} ref={el => chartRefs.current[index] = el} />
+                ))}
             </div>
             <div className="metrics-container">
                 {graphData && graphData.length > 0 && (
