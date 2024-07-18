@@ -47,80 +47,63 @@ const GraphPage = () => {
         return data.filter(item => new Date(item.timestamp) >= startTime);
     };
 
-    const getLastDataPoint = (data) => {
-        if (!data || data.length === 0) return null;
-        return data[data.length - 1];
-    };
-
-    const convertTimestamps = (data) => {
-        return data.map(item => ({
-            ...item,
-            timestamp: new Date(item.timestamp).toISOString()
-        }));
-    };
-
     useEffect(() => {
         if (graphData && graphData.length > 0) {
             const ctx = chartRef.current.getContext('2d');
             const apiData = graphData.find(apiData => apiData.api === sensorApi);
             if (apiData) {
-                const lastDataPoint = getLastDataPoint(apiData.data);
-                console.log('Last Data Point:', lastDataPoint);
-                if (lastDataPoint) {
-                    const convertedData = convertTimestamps(apiData.data);
-                    const filteredData = filterDataByTimeWindow(convertedData);
-                    console.log('Filtered Data:', filteredData);
-                    const sortedData = filteredData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-                    console.log('Sorted Data:', sortedData);
+                const filteredData = filterDataByTimeWindow(apiData.data);
+                console.log('Filtered Data:', filteredData);
+                const sortedData = filteredData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                console.log('Sorted Data:', sortedData);
 
-                    const datasets = [{
-                        label: apiData.api,
-                        data: sortedData.map(item => ({ x: new Date(item.timestamp), y: item.value })),
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 2,
-                        pointRadius: 3,
-                        pointHoverRadius: 5,
-                        fill: false,
-                        spanGaps: true, // Handle gaps in the data
-                    }];
+                const datasets = [{
+                    label: apiData.api,
+                    data: sortedData.map(item => ({ x: new Date(item.timestamp), y: item.value })),
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    fill: false,
+                    spanGaps: true, // Handle gaps in the data
+                }];
 
-                    if (window.myChart) {
-                        window.myChart.destroy();
-                    }
+                if (window.myChart) {
+                    window.myChart.destroy();
+                }
 
-                    window.myChart = new Chart(ctx, {
-                        type: 'line',
-                        data: { datasets },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            interaction: { mode: 'index', intersect: false },
-                            plugins: {
-                                tooltip: {
-                                    callbacks: {
-                                        label: function (context) {
-                                            const date = new Date(context.parsed.x).toLocaleString();
-                                            const value = context.parsed.y;
-                                            return `Value: ${value}, Timestamp: ${date}`;
-                                        }
+                window.myChart = new Chart(ctx, {
+                    type: 'line',
+                    data: { datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        const date = new Date(context.parsed.x).toLocaleString();
+                                        const value = context.parsed.y;
+                                        return `Value: ${value}, Timestamp: ${date}`;
                                     }
                                 }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: { unit: 'hour' },
+                                title: { display: true, text: 'Time' },
+                                ticks: { autoSkip: true, maxTicksLimit: 10 }
                             },
-                            scales: {
-                                x: {
-                                    type: 'time',
-                                    time: { unit: 'hour' },
-                                    title: { display: true, text: 'Time' },
-                                    ticks: { autoSkip: true, maxTicksLimit: 10 }
-                                },
-                                y: {
-                                    beginAtZero: true,
-                                    title: { display: true, text: 'Value' }
-                                }
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Value' }
                             }
                         }
-                    });
-                }
+                    }
+                });
             }
         }
     }, [graphData, sensorApi, timeWindow]);
