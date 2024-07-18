@@ -29,12 +29,12 @@ const identifyTable = (email, callback) => {
 };
 
 // Fetch all data for a specific API
-const fetchAllDataForAPI = (table, api, callback) => {
-    const query = `SELECT sensor_api, type, value, quality, qualityGood, timestamp FROM ${table} WHERE sensor_api = ? ORDER BY timestamp ASC`;
+const fetchAllData = (table, callback) => {
+    const query = `SELECT sensor_api, type, value, quality, qualityGood, timestamp FROM ${table} ORDER BY timestamp ASC`;
 
-    db.query(query, [api], (err, results) => {
+    db.query(query, (err, results) => {
         if (err) {
-            console.error(`Error fetching data for API ${api} from table ${table}:`, err);
+            console.error(`Error fetching data from table ${table}:`, err);
             return callback(err);
         }
 
@@ -65,47 +65,37 @@ const filterDataByTimeWindow = (data, timeWindow) => {
     return data.filter(item => new Date(item.timestamp) >= startTime && new Date(item.timestamp) <= endTime);
 };
 
-const getFilteredDataForAPI = (table, api, timeWindow, callback) => {
-    fetchAllDataForAPI(table, api, (err, data) => {
-        if (err) return callback(err);
+const groupDataByAPI = (data) => {
+    const groupedData = {};
 
-        const filteredData = filterDataByTimeWindow(data, timeWindow);
-
-        const values = filteredData.map(item => item.value);
-        if (values.length === 0) {
-            return callback(null, {
-                api,
-                data: [],
-                metrics: {
-                    average: 'NaN',
-                    max: '-Infinity',
-                    min: 'Infinity',
-                    range: '-Infinity',
-                    variance: 'NaN',
-                    stddev: 'NaN'
-                }
-            });
+    data.forEach(item => {
+        if (!groupedData[item.sensor_api]) {
+            groupedData[item.sensor_api] = [];
         }
-
-        const sum = values.reduce((a, b) => a + b, 0);
-        const average = (sum / values.length).toFixed(2);
-        const max = Math.max(...values).toFixed(2);
-        const min = Math.min(...values).toFixed(2);
-        const range = (max - min).toFixed(2);
-        const variance = (values.reduce((a, b) => a + Math.pow(b - average, 2), 0) / values.length).toFixed(2);
-        const stddev = Math.sqrt(variance).toFixed(2);
-
-        const metrics = {
-            average,
-            max,
-            min,
-            range,
-            variance,
-            stddev
-        };
-
-        callback(null, { api, data: filteredData, metrics });
+        groupedData[item.sensor_api].push(item);
     });
+
+    return groupedData;
+};
+
+const calculateMetrics = (data) => {
+    const values = data.map(item => item.value);
+    const sum = values.reduce((a, b) => a + b, 0);
+    const average = (sum / values.length).toFixed(2);
+    const max = Math.max(...values).toFixed(2);
+    const min = Math.min(...values).toFixed(2);
+    const range = (max - min).toFixed(2);
+    const variance = (values.reduce((a, b) => a + Math.pow(b - average, 2), 0) / values.length).toFixed(2);
+    const stddev = Math.sqrt(variance).toFixed(2);
+
+    return {
+        average,
+        max,
+        min,
+        range,
+        variance,
+        stddev
+    };
 };
 
 const getDataForAllAPIs = (req, res, timeWindow) => {
@@ -121,13 +111,22 @@ const getDataForAllAPIs = (req, res, timeWindow) => {
                 return res.status(500).send('Error identifying table');
             }
 
-            const sensorApi = req.query.api;
-            getFilteredDataForAPI(table, sensorApi, timeWindow, (err, data) => {
+            fetchAllData(table, (err, data) => {
                 if (err) {
-                    console.error('Error fetching data for API:', err);
-                    return res.status(500).send('Error fetching data for API');
+                    console.error('Error fetching data:', err);
+                    return res.status(500).send('Error fetching data');
                 }
-                res.json([data]); // Wrap in an array to maintain the response structure
+
+                const filteredData = filterDataByTimeWindow(data, timeWindow);
+                const groupedData = groupDataByAPI(filteredData);
+
+                const response = Object.keys(groupedData).map(api => ({
+                    api,
+                    data: groupedData[api],
+                    metrics: calculateMetrics(groupedData[api])
+                }));
+
+                res.json(response);
             });
         });
     } catch (error) {
