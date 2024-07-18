@@ -25,14 +25,14 @@ const GraphPage = () => {
 
     useEffect(() => {
         if (graphData && graphData.length > 0) {
-            const ctx = document.getElementById(`graphCanvas-${sensorApi}`).getContext('2d');
+            const ctx = document.getElementById(`graphCanvas`).getContext('2d');
 
             // Destroy any existing chart instance
-            if (window[`myChart-${sensorApi}`]) {
-                window[`myChart-${sensorApi}`].destroy();
+            if (window.myChart) {
+                window.myChart.destroy();
             }
 
-            window[`myChart-${sensorApi}`] = new Chart(ctx, {
+            window.myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     datasets: [{
@@ -104,7 +104,7 @@ const GraphPage = () => {
                 {loading && <p>Loading data...</p>}
                 {error && <p className="error">{error}</p>}
                 {graphData && graphData.length > 0 && (
-                    <canvas id={`graphCanvas-${sensorApi}`} className="graph-canvas" />
+                    <canvas id={`graphCanvas`} className="graph-canvas" />
                 )}
             </div>
             <div className="metrics-container">
