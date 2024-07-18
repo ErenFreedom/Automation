@@ -8,12 +8,11 @@ export const fetchGraphData = (sensorApi, timeWindow) => async (dispatch) => {
     dispatch({ type: FETCH_GRAPH_DATA_REQUEST });
     try {
         const token = localStorage.getItem('authToken');
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/graph/fetch-data-all-apis-${timeWindow}?api=${sensorApi}`, {
+        // Add a cache-busting query parameter
+        const cacheBuster = `&_cb=${new Date().getTime()}`;
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/graph/fetch-data-all-apis-${timeWindow}?api=${sensorApi}${cacheBuster}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
-                'Cache-Control': 'no-cache',
-                Pragma: 'no-cache',
-                Expires: '0'
             },
         });
         dispatch({ type: FETCH_GRAPH_DATA_SUCCESS, payload: response.data });
