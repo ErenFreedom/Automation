@@ -38,6 +38,7 @@ const fetchAllData = (table, callback) => {
             return callback(err);
         }
 
+        console.log(`Fetched ${results.length} rows from ${table}`);
         callback(null, results);
     });
 };
@@ -112,6 +113,11 @@ const getDataForAllAPIs = (req, res, timeWindow) => {
             fetchAllData(table, (err, data) => {
                 if (err) return res.status(500).send('Error fetching data');
 
+                if (data.length === 0) {
+                    console.log('No data fetched from the table');
+                    return res.json([]);
+                }
+
                 const groupedData = data.reduce((acc, item) => {
                     if (!acc[item.sensor_api]) {
                         acc[item.sensor_api] = [];
@@ -120,13 +126,14 @@ const getDataForAllAPIs = (req, res, timeWindow) => {
                     return acc;
                 }, {});
 
-                const apiDataPromises = Object.keys(groupedData).map(api => {
+                const apiData = Object.keys(groupedData).map(api => {
                     const filteredData = filterDataByTimeWindow(groupedData[api], timeWindow);
                     const metrics = calculateMetrics(filteredData);
                     return { api, data: filteredData, metrics };
                 });
 
-                res.json(apiDataPromises);
+                console.log(`Sending data for ${apiData.length} APIs`);
+                res.json(apiData);
             });
         });
     } catch (error) {
