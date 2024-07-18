@@ -66,6 +66,11 @@ const filterDataByTimeWindow = (data, timeWindow) => {
     const startYear = startTime.getUTCFullYear();
 
     return data.filter(item => {
+        if (typeof item.timestamp !== 'string') {
+            console.error(`Invalid timestamp format: ${item.timestamp}`);
+            return false;
+        }
+        
         const [datePart] = item.timestamp.split('T');
         const [year, month, day] = datePart.split('-').map(Number);
 
