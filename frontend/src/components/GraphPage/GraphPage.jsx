@@ -32,13 +32,15 @@ const GraphPage = () => {
                 window.myChart.destroy();
             }
 
-            const datasets = [{
-                label: sensorApi,
-                data: graphData[0].data.map(item => ({ x: new Date(item.timestamp), y: item.value })),
+            const datasets = graphData.map(apiData => ({
+                label: apiData.api,
+                data: apiData.data.map(item => ({ x: new Date(item.timestamp), y: item.value })),
                 borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1,
+                borderWidth: 2,
+                pointRadius: 3,
+                pointHoverRadius: 5,
                 fill: false,
-            }];
+            }));
 
             window.myChart = new Chart(ctx, {
                 type: 'line',
@@ -46,6 +48,23 @@ const GraphPage = () => {
                     datasets: datasets,
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const date = new Date(context.parsed.x).toLocaleString();
+                                    const value = context.parsed.y;
+                                    return `Value: ${value}, Timestamp: ${date}`;
+                                }
+                            }
+                        }
+                    },
                     scales: {
                         x: {
                             type: 'time',
@@ -55,6 +74,10 @@ const GraphPage = () => {
                             title: {
                                 display: true,
                                 text: 'Time'
+                            },
+                            ticks: {
+                                autoSkip: true,
+                                maxTicksLimit: 10,
                             }
                         },
                         y: {
