@@ -65,40 +65,42 @@ const GraphPage = () => {
                     spanGaps: true, // Handle gaps in the data
                 }];
 
-                if (ctx) {
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: { datasets },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            interaction: { mode: 'index', intersect: false },
-                            plugins: {
-                                tooltip: {
-                                    callbacks: {
-                                        label: function (context) {
-                                            const date = new Date(context.parsed.x).toLocaleString();
-                                            const value = context.parsed.y;
-                                            return `Value: ${value}, Timestamp: ${date}`;
-                                        }
+                if (window.myChart) {
+                    window.myChart.destroy();
+                }
+
+                window.myChart = new Chart(ctx, {
+                    type: 'line',
+                    data: { datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        const date = new Date(context.parsed.x).toLocaleString();
+                                        const value = context.parsed.y;
+                                        return `Value: ${value}, Timestamp: ${date}`;
                                     }
                                 }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: { unit: 'hour' },
+                                title: { display: true, text: 'Time' },
+                                ticks: { autoSkip: true, maxTicksLimit: 10 }
                             },
-                            scales: {
-                                x: {
-                                    type: 'time',
-                                    time: { unit: 'hour' },
-                                    title: { display: true, text: 'Time' },
-                                    ticks: { autoSkip: true, maxTicksLimit: 10 }
-                                },
-                                y: {
-                                    beginAtZero: true,
-                                    title: { display: true, text: 'Value' }
-                                }
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Value' }
                             }
                         }
-                    });
-                }
+                    }
+                });
             }
         }
     }, [graphData, sensorApi, timeWindow]);
