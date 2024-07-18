@@ -28,9 +28,9 @@ const identifyTable = (email, callback) => {
     });
 };
 
-// Fetch all data for a specific API
+// Fetch all data from the sensor data table
 const fetchAllData = (table, callback) => {
-    const query = `SELECT sensor_api, type, value, quality, qualityGood, timestamp FROM ${table} ORDER BY timestamp ASC`;
+    const query = `SELECT sensor_api, type, value, quality, qualityGood, timestamp FROM ${table} ORDER BY id ASC`;
 
     db.query(query, (err, results) => {
         if (err) {
@@ -65,21 +65,19 @@ const filterDataByTimeWindow = (data, timeWindow) => {
     return data.filter(item => new Date(item.timestamp) >= startTime && new Date(item.timestamp) <= endTime);
 };
 
-const groupDataByAPI = (data) => {
-    const groupedData = {};
-
-    data.forEach(item => {
-        if (!groupedData[item.sensor_api]) {
-            groupedData[item.sensor_api] = [];
-        }
-        groupedData[item.sensor_api].push(item);
-    });
-
-    return groupedData;
-};
-
 const calculateMetrics = (data) => {
     const values = data.map(item => item.value);
+    if (values.length === 0) {
+        return {
+            average: 'NaN',
+            max: '-Infinity',
+            min: 'Infinity',
+            range: '-Infinity',
+            variance: 'NaN',
+            stddev: 'NaN'
+        };
+    }
+
     const sum = values.reduce((a, b) => a + b, 0);
     const average = (sum / values.length).toFixed(2);
     const max = Math.max(...values).toFixed(2);
@@ -112,21 +110,24 @@ const getDataForAllAPIs = (req, res, timeWindow) => {
             }
 
             fetchAllData(table, (err, data) => {
-                if (err) {
-                    console.error('Error fetching data:', err);
-                    return res.status(500).send('Error fetching data');
-                }
+                if (err) return res.status(500).send('Error fetching data');
 
                 const filteredData = filterDataByTimeWindow(data, timeWindow);
-                const groupedData = groupDataByAPI(filteredData);
+                const groupedData = filteredData.reduce((acc, item) => {
+                    if (!acc[item.sensor_api]) {
+                        acc[item.sensor_api] = [];
+                    }
+                    acc[item.sensor_api].push(item);
+                    return acc;
+                }, {});
 
-                const response = Object.keys(groupedData).map(api => ({
+                const result = Object.keys(groupedData).map(api => ({
                     api,
                     data: groupedData[api],
                     metrics: calculateMetrics(groupedData[api])
                 }));
 
-                res.json(response);
+                res.json(result);
             });
         });
     } catch (error) {
