@@ -25,6 +25,8 @@ const GraphPage = () => {
 
     useEffect(() => {
         if (graphData && graphData.length > 0) {
+            console.log('Graph Data:', graphData); // Debug log
+
             const ctx = document.getElementById(`graphCanvas`).getContext('2d');
 
             // Destroy any existing chart instance
@@ -32,18 +34,22 @@ const GraphPage = () => {
                 window.myChart.destroy();
             }
 
+            const datasets = [{
+                label: sensorApi,
+                data: graphData[0].data.map(item => ({ x: new Date(item.timestamp), y: item.value })),
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                fill: false,
+            }];
+
+            console.log('Datasets:', datasets); // Debug log
+
             window.myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    datasets: [{
-                        label: sensorApi,
-                        data: graphData[0].data.map(item => ({ x: new Date(item.timestamp), y: item.value })),
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 2,
-                        pointRadius: 3,
-                        pointHoverRadius: 5,
-                        fill: false,
-                    }],
+                    datasets: datasets,
                 },
                 options: {
                     responsive: true,
