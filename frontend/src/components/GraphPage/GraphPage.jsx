@@ -48,6 +48,9 @@ const GraphPage = () => {
 
     useEffect(() => {
         if (graphData && graphData.length > 0) {
+            const sensorData = graphData.find(apiData => apiData.api === sensorApi);
+            if (!sensorData) return;
+
             const ctx = document.getElementById('graphCanvas').getContext('2d');
 
             // Destroy any existing chart instance
@@ -55,7 +58,7 @@ const GraphPage = () => {
                 window.myChart.destroy();
             }
 
-            const sortedData = filterDataByTimeWindow(graphData.find(apiData => apiData.api === sensorApi).data)
+            const sortedData = filterDataByTimeWindow(sensorData.data)
                 .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
             const datasets = [{
@@ -120,6 +123,8 @@ const GraphPage = () => {
         }
     }, [graphData, sensorApi, timeWindow]);
 
+    const sensorMetrics = graphData?.find(apiData => apiData.api === sensorApi)?.metrics;
+
     return (
         <div className="graph-page-container">
             <div className="filter-container">
@@ -137,15 +142,15 @@ const GraphPage = () => {
                 )}
             </div>
             <div className="metrics-container">
-                {graphData && graphData.length > 0 && (
+                {sensorMetrics && (
                     <div>
                         <h3>Metrics for {sensorApi}</h3>
-                        <p>Average: {graphData.find(apiData => apiData.api === sensorApi).metrics.average}</p>
-                        <p>Max: {graphData.find(apiData => apiData.api === sensorApi).metrics.max}</p>
-                        <p>Min: {graphData.find(apiData => apiData.api === sensorApi).metrics.min}</p>
-                        <p>Range: {graphData.find(apiData => apiData.api === sensorApi).metrics.range}</p>
-                        <p>Variance: {graphData.find(apiData => apiData.api === sensorApi).metrics.variance}</p>
-                        <p>Standard Deviation: {graphData.find(apiData => apiData.api === sensorApi).metrics.stddev}</p>
+                        <p>Average: {sensorMetrics.average}</p>
+                        <p>Max: {sensorMetrics.max}</p>
+                        <p>Min: {sensorMetrics.min}</p>
+                        <p>Range: {sensorMetrics.range}</p>
+                        <p>Variance: {sensorMetrics.variance}</p>
+                        <p>Standard Deviation: {sensorMetrics.stddev}</p>
                     </div>
                 )}
             </div>
