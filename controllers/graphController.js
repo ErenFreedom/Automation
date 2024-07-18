@@ -63,7 +63,15 @@ const filterDataByTimeWindow = (data, timeWindow) => {
             return data;
     }
 
-    return data.filter(item => new Date(item.timestamp) >= startTime && new Date(item.timestamp) <= endTime);
+    console.log(`Filtering data from ${startTime} to ${endTime}`);
+    return data.filter(item => {
+        const itemTime = new Date(item.timestamp);
+        const isWithinTimeWindow = itemTime >= startTime && itemTime <= endTime;
+        if (!isWithinTimeWindow) {
+            console.log(`Excluding data point with timestamp: ${item.timestamp}`);
+        }
+        return isWithinTimeWindow;
+    });
 };
 
 const calculateMetrics = (data) => {
@@ -129,7 +137,7 @@ const getDataForAllAPIs = (req, res, timeWindow) => {
                 const apiData = Object.keys(groupedData).map(api => {
                     const filteredData = filterDataByTimeWindow(groupedData[api], timeWindow);
                     const metrics = calculateMetrics(filteredData);
-                    return { api, data: filteredData, metrics };
+                    return { api, data: filteredData.map(item => ({ value: item.value, timestamp: item.timestamp })), metrics };
                 });
 
                 console.log(`Sending data for ${apiData.length} APIs`);
