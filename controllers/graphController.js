@@ -61,7 +61,10 @@ const filterDataByTimeWindow = (data, timeWindow) => {
             startTime = new Date(0); // Default to all data if no time window is specified
     }
 
-    return data.filter(item => new Date(item.timestamp) >= startTime && new Date(item.timestamp) <= now);
+    return data.filter(item => {
+        const itemTimestamp = new Date(item.timestamp);
+        return itemTimestamp >= startTime && itemTimestamp <= now;
+    });
 };
 
 const getDataForAllAPIs = (req, res, timeWindow) => {
