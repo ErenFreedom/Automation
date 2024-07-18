@@ -53,6 +53,15 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Middleware to disable caching
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
+  next();
+});
+
 // Session management
 app.use(session({
   secret: process.env.SECRET_KEY,
@@ -78,7 +87,7 @@ app.use('/api', dataRoutes); // Ensure this is protected with token verification
 app.use(loggerRoutes);
 app.use('/api', latestDataRoutes); // Adding the new route for latest data
 app.use('/api', reportRoutes); // Adding the new route for report generation
-app.use('/api/graph', graphRoutes);// Adding the new route for graph data
+app.use('/api/graph', graphRoutes); // Adding the new route for graph data
 app.use('/api', accountRoutes); // Adding the new route for account actions
 app.use('/api', queryRoutes); // Adding the new route for queries
 app.use('/api', statusRoutes); // Adding the new route for status management

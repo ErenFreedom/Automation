@@ -11,6 +11,9 @@ export const fetchGraphData = (sensorApi, timeWindow) => async (dispatch) => {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/graph/fetch-data-all-apis-${timeWindow}?api=${sensorApi}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
+                'Cache-Control': 'no-cache',
+                Pragma: 'no-cache',
+                Expires: '0'
             },
         });
         dispatch({ type: FETCH_GRAPH_DATA_SUCCESS, payload: response.data });
