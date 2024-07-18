@@ -32,13 +32,13 @@ const GraphPage = () => {
                 window.myChart.destroy();
             }
 
-            const datasets = graphData.map(apiData => ({
-                label: apiData.api,
-                data: apiData.data.map(item => ({ x: new Date(item.timestamp), y: item.value })),
+            const datasets = [{
+                label: sensorApi,
+                data: graphData[0].data.map(item => ({ x: new Date(item.timestamp), y: item.value })),
                 borderColor: 'rgba(75, 192, 192, 1)',
                 borderWidth: 1,
                 fill: false,
-            }));
+            }];
 
             window.myChart = new Chart(ctx, {
                 type: 'line',
@@ -68,7 +68,7 @@ const GraphPage = () => {
                 }
             });
         }
-    }, [graphData]);
+    }, [graphData, sensorApi]);
 
     return (
         <div className="graph-page-container">
@@ -87,17 +87,17 @@ const GraphPage = () => {
                 )}
             </div>
             <div className="metrics-container">
-                {graphData && graphData.map(apiData => (
-                    <div key={apiData.api}>
-                        <h3>Metrics for {apiData.api}</h3>
-                        <p>Average: {apiData.metrics.average}</p>
-                        <p>Max: {apiData.metrics.max}</p>
-                        <p>Min: {apiData.metrics.min}</p>
-                        <p>Range: {apiData.metrics.range}</p>
-                        <p>Variance: {apiData.metrics.variance}</p>
-                        <p>Standard Deviation: {apiData.metrics.stddev}</p>
+                {graphData && graphData.length > 0 && (
+                    <div>
+                        <h3>Metrics for {sensorApi}</h3>
+                        <p>Average: {graphData[0].metrics.average}</p>
+                        <p>Max: {graphData[0].metrics.max}</p>
+                        <p>Min: {graphData[0].metrics.min}</p>
+                        <p>Range: {graphData[0].metrics.range}</p>
+                        <p>Variance: {graphData[0].metrics.variance}</p>
+                        <p>Standard Deviation: {graphData[0].metrics.stddev}</p>
                     </div>
-                ))}
+                )}
             </div>
         </div>
     );
