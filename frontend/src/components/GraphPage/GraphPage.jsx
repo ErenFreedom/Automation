@@ -14,8 +14,7 @@ const GraphPage = () => {
     const loading = useSelector((state) => state.graph.loading);
     const error = useSelector((state) => state.graph.error);
     const [timeWindow, setTimeWindow] = useState('1day');
-
-    const chartRefs = useRef([]);
+    const chartRef = useRef(null);
 
     useEffect(() => {
         dispatch(fetchGraphData(sensorApi, timeWindow));
@@ -50,8 +49,9 @@ const GraphPage = () => {
 
     useEffect(() => {
         if (graphData && graphData.length > 0) {
-            graphData.forEach((apiData, index) => {
-                const ctx = chartRefs.current[index].getContext('2d');
+            const ctx = chartRef.current.getContext('2d');
+            const apiData = graphData.find(apiData => apiData.api === sensorApi);
+            if (apiData) {
                 const filteredData = filterDataByTimeWindow(apiData.data);
                 const sortedData = filteredData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
                 const datasets = [{
@@ -99,9 +99,11 @@ const GraphPage = () => {
                         }
                     });
                 }
-            });
+            }
         }
     }, [graphData, sensorApi, timeWindow]);
+
+    const apiData = graphData ? graphData.find(apiData => apiData.api === sensorApi) : null;
 
     return (
         <div className="graph-page-container">
@@ -115,23 +117,21 @@ const GraphPage = () => {
             <div className="graph-container">
                 {loading && <p>Loading data...</p>}
                 {error && <p className="error">{error}</p>}
-                {graphData && graphData.length > 0 && graphData.map((apiData, index) => (
-                    <canvas key={apiData.api} ref={el => chartRefs.current[index] = el} />
-                ))}
+                {apiData && apiData.data && apiData.data.length > 0 && (
+                    <canvas ref={chartRef} />
+                )}
             </div>
             <div className="metrics-container">
-                {graphData && graphData.length > 0 && (
-                    graphData.map(apiData => (
-                        <div key={apiData.api}>
-                            <h3>Metrics for {apiData.api}</h3>
-                            <p>Average: {calculateMetric(apiData.data, 'average')}</p>
-                            <p>Max: {calculateMetric(apiData.data, 'max')}</p>
-                            <p>Min: {calculateMetric(apiData.data, 'min')}</p>
-                            <p>Range: {calculateMetric(apiData.data, 'range')}</p>
-                            <p>Variance: {calculateMetric(apiData.data, 'variance')}</p>
-                            <p>Standard Deviation: {calculateMetric(apiData.data, 'stddev')}</p>
-                        </div>
-                    ))
+                {apiData && apiData.data && apiData.data.length > 0 && (
+                    <div>
+                        <h3>Metrics for {sensorApi}</h3>
+                        <p>Average: {calculateMetric(apiData.data, 'average')}</p>
+                        <p>Max: {calculateMetric(apiData.data, 'max')}</p>
+                        <p>Min: {calculateMetric(apiData.data, 'min')}</p>
+                        <p>Range: {calculateMetric(apiData.data, 'range')}</p>
+                        <p>Variance: {calculateMetric(apiData.data, 'variance')}</p>
+                        <p>Standard Deviation: {calculateMetric(apiData.data, 'stddev')}</p>
+                    </div>
                 )}
             </div>
         </div>
