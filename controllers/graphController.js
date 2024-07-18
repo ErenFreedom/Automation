@@ -43,50 +43,7 @@ const fetchAllData = (table, callback) => {
     });
 };
 
-const filterDataByTimeWindow = (data, timeWindow) => {
-    const now = new Date();
-    let startTime;
-
-    switch (timeWindow) {
-        case '1day':
-            startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-            break;
-        case '1week':
-            startTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-            break;
-        case '1month':
-            startTime = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-            break;
-        default:
-            startTime = new Date(0); // Default to all data if no time window is specified
-    }
-
-    const startDay = startTime.getUTCDate();
-    const startMonth = startTime.getUTCMonth() + 1; // getUTCMonth() is zero-based
-    const startYear = startTime.getUTCFullYear();
-
-    return data.filter(item => {
-        if (typeof item.timestamp !== 'string') {
-            console.error(`Invalid timestamp format: ${item.timestamp}`);
-            return false;
-        }
-        
-        const [datePart] = item.timestamp.split('T');
-        const [year, month, day] = datePart.split('-').map(Number);
-
-        if (timeWindow === '1day') {
-            return day >= startDay && month === startMonth && year === startYear;
-        } else if (timeWindow === '1week') {
-            return day >= startDay - 7 && month === startMonth && year === startYear;
-        } else if (timeWindow === '1month') {
-            return month === startMonth && year === startYear;
-        }
-
-        return false;
-    });
-};
-
-const getDataForAllAPIs = (req, res, timeWindow) => {
+const getDataForAllAPIs = (req, res) => {
     const token = req.headers.authorization.split(' ')[1];
 
     try {
@@ -117,7 +74,7 @@ const getDataForAllAPIs = (req, res, timeWindow) => {
 
                 const apiData = Object.keys(groupedData).map(api => ({
                     api,
-                    data: filterDataByTimeWindow(groupedData[api], timeWindow),
+                    data: groupedData[api],
                 }));
 
                 console.log(`Sending data for ${apiData.length} APIs`);
@@ -130,6 +87,6 @@ const getDataForAllAPIs = (req, res, timeWindow) => {
     }
 };
 
-exports.getDataForAllAPIs1Day = (req, res) => getDataForAllAPIs(req, res, '1day');
-exports.getDataForAllAPIs1Week = (req, res) => getDataForAllAPIs(req, res, '1week');
-exports.getDataForAllAPIs1Month = (req, res) => getDataForAllAPIs(req, res, '1month');
+exports.getDataForAllAPIs1Day = (req, res) => getDataForAllAPIs(req, res);
+exports.getDataForAllAPIs1Week = (req, res) => getDataForAllAPIs(req, res);
+exports.getDataForAllAPIs1Month = (req, res) => getDataForAllAPIs(req, res);
