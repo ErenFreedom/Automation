@@ -8,7 +8,7 @@ import 'chartjs-adapter-date-fns'; // Import the date adapter
 Chart.register(...registerables);
 
 const GraphPage = () => {
-    const { sensorApi } = useParams();
+    const { sensorApi, userId } = useParams();
     const dispatch = useDispatch();
     const graphData = useSelector((state) => state.graph.data);
     const loading = useSelector((state) => state.graph.loading);
@@ -25,9 +25,6 @@ const GraphPage = () => {
 
     useEffect(() => {
         if (graphData && graphData.length > 0) {
-            const filteredData = graphData.find(data => data.api === sensorApi);
-            console.log('Filtered Data:', filteredData); // Debug log
-
             const ctx = document.getElementById('graphCanvas').getContext('2d');
 
             // Destroy any existing chart instance
@@ -35,68 +32,67 @@ const GraphPage = () => {
                 window.myChart.destroy();
             }
 
-            if (filteredData && filteredData.data.length > 0) {
-                const dataset = {
-                    label: sensorApi,
-                    data: filteredData.data.map(item => ({ x: new Date(item.timestamp), y: item.value })),
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 2,
-                    pointRadius: 3,
-                    pointHoverRadius: 5,
-                    fill: false,
-                };
+            const sortedData = graphData[0].data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-                console.log('Dataset:', dataset); // Debug log
+            const datasets = [{
+                label: sensorApi,
+                data: sortedData.map(item => ({ x: new Date(item.timestamp), y: item.value })),
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                fill: false,
+                spanGaps: true, // Handle gaps in the data
+            }];
 
-                window.myChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        datasets: [dataset],
+            window.myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: datasets,
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: {
-                            mode: 'index',
-                            intersect: false,
-                        },
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function (context) {
-                                        const date = new Date(context.parsed.x).toLocaleString();
-                                        const value = context.parsed.y;
-                                        return `Value: ${value}, Timestamp: ${date}`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                type: 'time',
-                                time: {
-                                    unit: 'hour'
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Time'
-                                },
-                                ticks: {
-                                    autoSkip: true,
-                                    maxTicksLimit: 10,
-                                }
-                            },
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Value'
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const date = new Date(context.parsed.x).toLocaleString();
+                                    const value = context.parsed.y;
+                                    return `Value: ${value}, Timestamp: ${date}`;
                                 }
                             }
                         }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'hour'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Time'
+                            },
+                            ticks: {
+                                autoSkip: true,
+                                maxTicksLimit: 10,
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Value'
+                            }
+                        }
                     }
-                });
-            }
+                }
+            });
         }
     }, [graphData, sensorApi]);
 
@@ -113,7 +109,7 @@ const GraphPage = () => {
                 {loading && <p>Loading data...</p>}
                 {error && <p className="error">{error}</p>}
                 {graphData && graphData.length > 0 && (
-                    <canvas id="graphCanvas" className="graph-canvas" />
+                    <canvas id="graphCanvas" />
                 )}
             </div>
             <div className="metrics-container">
