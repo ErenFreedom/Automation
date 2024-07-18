@@ -5,7 +5,6 @@ import { fetchGraphData } from '../../actions/graphActions';
 import './GraphPage.css';
 import { Chart, registerables } from 'chart.js';
 import 'chartjs-adapter-date-fns'; // Import the date adapter
-import { subDays, subWeeks, subMonths, isAfter } from 'date-fns';
 Chart.register(...registerables);
 
 const GraphPage = () => {
@@ -33,21 +32,26 @@ const GraphPage = () => {
 
         switch (timeWindow) {
             case '1day':
-                startTime = subDays(now, 1);
+                startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
                 break;
             case '1week':
-                startTime = subWeeks(now, 1);
+                startTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
                 break;
             case '1month':
-                startTime = subMonths(now, 1);
+                startTime = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
                 break;
             default:
                 return data;
         }
 
-        const filteredData = data.filter(item => isAfter(new Date(item.timestamp), startTime));
-        console.log('Filtered Data:', filteredData);
-        return filteredData;
+        return data.filter(item => new Date(item.timestamp) >= startTime);
+    };
+
+    const convertTimestamps = (data) => {
+        return data.map(item => ({
+            ...item,
+            timestamp: new Date(item.timestamp).toISOString()
+        }));
     };
 
     useEffect(() => {
@@ -55,8 +59,9 @@ const GraphPage = () => {
             const ctx = chartRef.current.getContext('2d');
             const apiData = graphData.find(apiData => apiData.api === sensorApi);
             if (apiData) {
-                const filteredData = filterDataByTimeWindow(apiData.data);
-                console.log('Data before sorting:', filteredData);
+                const convertedData = convertTimestamps(apiData.data);
+                const filteredData = filterDataByTimeWindow(convertedData);
+                console.log('Filtered Data:', filteredData);
                 const sortedData = filteredData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
                 console.log('Sorted Data:', sortedData);
 
@@ -146,28 +151,27 @@ const GraphPage = () => {
     );
 };
 
-export default GraphPage;
-
-const calculateMetric = (data, metric) => {
+const calculateMetric = (data, metricType) => {
     const values = data.map(item => item.value);
-    if (values.length === 0) return 'NaN';
+    if (values.length === 0) return 'N/A';
 
-    switch (metric) {
-        case 'average':
-            return (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2);
-        case 'max':
-            return Math.max(...values).toFixed(2);
-        case 'min':
-            return Math.min(...values).toFixed(2);
-        case 'range':
-            return (Math.max(...values) - Math.min(...values)).toFixed(2);
-        case 'variance':
-            const mean = values.reduce((a, b) => a + b, 0) / values.length;
-            return (values.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / values.length).toFixed(2);
-        case 'stddev':
-            const variance = values.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / values.length;
-            return Math.sqrt(variance).toFixed(2);
-        default:
-            return 'NaN';
+    const sum = values.reduce((a, b) => a + b, 0);
+    const average = (sum / values.length).toFixed(2);
+    const max = Math.max(...values).toFixed(2);
+    const min = Math.min(...values).toFixed(2);
+    const range = (max - min).toFixed(2);
+    const variance = (values.reduce((a, b) => a + Math.pow(b - average, 2), 0) / values.length).toFixed(2);
+    const stddev = Math.sqrt(variance).toFixed(2);
+
+    switch (metricType) {
+        case 'average': return average;
+        case 'max': return max;
+        case 'min': return min;
+        case 'range': return range;
+        case 'variance': return variance;
+        case 'stddev': return stddev;
+        default: return 'N/A';
     }
 };
+
+export default GraphPage;
