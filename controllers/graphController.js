@@ -61,9 +61,23 @@ const filterDataByTimeWindow = (data, timeWindow) => {
             startTime = new Date(0); // Default to all data if no time window is specified
     }
 
+    const startDay = startTime.getUTCDate();
+    const startMonth = startTime.getUTCMonth() + 1; // getUTCMonth() is zero-based
+    const startYear = startTime.getUTCFullYear();
+
     return data.filter(item => {
-        const itemTimestamp = new Date(item.timestamp);
-        return itemTimestamp >= startTime && itemTimestamp <= now;
+        const [datePart] = item.timestamp.split('T');
+        const [year, month, day] = datePart.split('-').map(Number);
+
+        if (timeWindow === '1day') {
+            return day >= startDay && month === startMonth && year === startYear;
+        } else if (timeWindow === '1week') {
+            return day >= startDay - 7 && month === startMonth && year === startYear;
+        } else if (timeWindow === '1month') {
+            return month === startMonth && year === startYear;
+        }
+
+        return false;
     });
 };
 
