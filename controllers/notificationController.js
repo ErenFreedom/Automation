@@ -39,6 +39,8 @@ exports.checkThresholds = async () => {
             return;
         }
 
+        console.log('Fetched Thresholds:', thresholds);
+
         thresholds.forEach(threshold => {
             identifyTable(threshold.user_email, (err, table) => {
                 if (err) {
@@ -57,6 +59,8 @@ exports.checkThresholds = async () => {
                         console.error(`Error checking sensor data for ${threshold.sensor_api}:`, err);
                         return;
                     }
+
+                    console.log(`Results for ${threshold.sensor_api}:`, results);
 
                     results.forEach(result => {
                         const alert = {
@@ -100,6 +104,8 @@ exports.getNotifications = async (req, res) => {
                     console.error('Error fetching notifications:', err);
                     return res.status(500).send('Error fetching notifications');
                 }
+
+                console.log('Fetched Notifications:', results);
 
                 res.status(200).json(results);
             });
