@@ -28,8 +28,6 @@ const identifyTable = (email, callback) => {
     });
 };
 
-let lastCheckedTimestamps = {};  // To track the last checked timestamp for each table
-
 exports.checkThresholds = async () => {
     const thresholdQuery = `SELECT t.user_email, t.sensor_api, t.threshold_value FROM thresholds t`;
 
@@ -48,35 +46,32 @@ exports.checkThresholds = async () => {
                     return;
                 }
 
-                let lastCheckedTimestamp = lastCheckedTimestamps[table] || new Date(0);  // Start from the earliest date if not checked before
                 const dataQuery = `SELECT sensor_api, value, timestamp
                                    FROM ${table}
-                                   WHERE sensor_api = ? AND value > ? AND timestamp > ?`;
-                const values = [threshold.sensor_api, threshold.threshold_value, lastCheckedTimestamp];
+                                   WHERE sensor_api = ?`;
+                const values = [threshold.sensor_api];
 
                 db.query(dataQuery, values, (err, results) => {
                     if (err) {
-                        console.error(`Error checking sensor data for ${threshold.sensor_api}:`, err);
+                        console.error(`Error fetching sensor data for ${threshold.sensor_api}:`, err);
                         return;
                     }
 
                     console.log(`Results for ${threshold.sensor_api} in ${table}:`, results);
 
                     results.forEach(result => {
-                        const alert = {
-                            sensorApi: result.sensor_api,
-                            value: result.value,
-                            timestamp: result.timestamp,
-                            message: `Threshold exceeded for ${result.sensor_api}`
-                        };
+                        if (result.value > threshold.threshold_value) {
+                            const alert = {
+                                sensorApi: result.sensor_api,
+                                value: result.value,
+                                timestamp: result.timestamp,
+                                message: `Threshold exceeded for ${result.sensor_api}`
+                            };
 
-                        // Store the alert in some in-memory store or logging mechanism
-                        console.log('Alert:', alert);
+                            // Store the alert in some in-memory store or logging mechanism
+                            console.log('Alert:', alert);
+                        }
                     });
-
-                    if (results.length > 0) {
-                        lastCheckedTimestamps[table] = results[results.length - 1].timestamp;
-                    }
                 });
             });
         });
