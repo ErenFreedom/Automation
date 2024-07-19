@@ -43,7 +43,7 @@ const fetchAllData = (table, callback) => {
     });
 };
 
-const getDataForAllAPIs = (req, res, timeWindow) => {
+const getDataForAllAPIsWithTimeWindow = (req, res, timeWindow) => {
     const token = req.headers.authorization.split(' ')[1];
 
     try {
@@ -81,7 +81,9 @@ const getDataForAllAPIs = (req, res, timeWindow) => {
                         startTime = new Date(0); // Default to all data if no time window is specified
                 }
 
-                const filteredData = data.filter(item => new Date(item.timestamp) >= startTime);
+                startTime = startTime.toISOString();
+
+                const filteredData = data.filter(item => new Date(item.timestamp).toISOString() >= startTime);
 
                 const groupedData = filteredData.reduce((acc, item) => {
                     if (!acc[item.sensor_api]) {
@@ -96,7 +98,7 @@ const getDataForAllAPIs = (req, res, timeWindow) => {
                     data: groupedData[api],
                 }));
 
-                console.log(`Sending data for ${apiData.length} APIs`);
+                console.log(`Sending filtered data for ${apiData.length} APIs`);
                 res.json(apiData);
             });
         });
@@ -106,6 +108,6 @@ const getDataForAllAPIs = (req, res, timeWindow) => {
     }
 };
 
-exports.getDataForAllAPIs1Day = (req, res) => getDataForAllAPIs(req, res, '1day');
-exports.getDataForAllAPIs1Week = (req, res) => getDataForAllAPIs(req, res, '1week');
-exports.getDataForAllAPIs1Month = (req, res) => getDataForAllAPIs(req, res, '1month');
+exports.getDataForAllAPIs1Day = (req, res) => getDataForAllAPIsWithTimeWindow(req, res, '1day');
+exports.getDataForAllAPIs1Week = (req, res) => getDataForAllAPIsWithTimeWindow(req, res, '1week');
+exports.getDataForAllAPIs1Month = (req, res) => getDataForAllAPIsWithTimeWindow(req, res, '1month');
