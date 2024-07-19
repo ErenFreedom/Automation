@@ -55,7 +55,7 @@ const GraphPage = () => {
     };
 
     useEffect(() => {
-        if (graphData && graphData.length > 0) {
+        if (graphData && graphData.length > 0 && chartRef.current) {
             const ctx = chartRef.current.getContext('2d');
             const apiData = graphData.find(apiData => apiData.api === sensorApi);
             if (apiData) {
