@@ -30,7 +30,7 @@ const identifyTable = (email, callback) => {
 
 // Fetch all data from the sensor data table
 const fetchAllData = (table, callback) => {
-    const query = `SELECT id, sensor_api, value, timestamp FROM ${table} ORDER BY id ASC`;
+    const query = `SELECT sensor_api, value, timestamp FROM ${table} ORDER BY id ASC`;
 
     db.query(query, (err, results) => {
         if (err) {
@@ -43,7 +43,7 @@ const fetchAllData = (table, callback) => {
     });
 };
 
-const getDataForAllAPIsWithTimeWindow = (req, res, timeWindow) => {
+const getDataForAllAPIs = (req, res) => {
     const token = req.headers.authorization.split(' ')[1];
 
     try {
@@ -64,28 +64,12 @@ const getDataForAllAPIsWithTimeWindow = (req, res, timeWindow) => {
                     return res.json([]);
                 }
 
-                const now = new Date();
-                let startTime;
+                // Create a new attribute with a friendly timestamp format
+                data.forEach(item => {
+                    item.friendly_timestamp = new Date(item.timestamp).toLocaleString();
+                });
 
-                switch (timeWindow) {
-                    case '1day':
-                        startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-                        break;
-                    case '1week':
-                        startTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                        break;
-                    case '1month':
-                        startTime = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-                        break;
-                    default:
-                        startTime = new Date(0); // Default to all data if no time window is specified
-                }
-
-                const filteredData = data.filter(item => new Date(item.timestamp) >= startTime);
-
-                console.log('Filtered Data:', filteredData);
-
-                const groupedData = filteredData.reduce((acc, item) => {
+                const groupedData = data.reduce((acc, item) => {
                     if (!acc[item.sensor_api]) {
                         acc[item.sensor_api] = [];
                     }
@@ -98,7 +82,7 @@ const getDataForAllAPIsWithTimeWindow = (req, res, timeWindow) => {
                     data: groupedData[api],
                 }));
 
-                console.log(`Sending filtered data for ${apiData.length} APIs`);
+                console.log(`Sending data for ${apiData.length} APIs`);
                 res.json(apiData);
             });
         });
@@ -108,6 +92,6 @@ const getDataForAllAPIsWithTimeWindow = (req, res, timeWindow) => {
     }
 };
 
-exports.getDataForAllAPIs1Day = (req, res) => getDataForAllAPIsWithTimeWindow(req, res, '1day');
-exports.getDataForAllAPIs1Week = (req, res) => getDataForAllAPIsWithTimeWindow(req, res, '1week');
-exports.getDataForAllAPIs1Month = (req, res) => getDataForAllAPIsWithTimeWindow(req, res, '1month');
+exports.getDataForAllAPIs1Day = (req, res) => getDataForAllAPIs(req, res);
+exports.getDataForAllAPIs1Week = (req, res) => getDataForAllAPIs(req, res);
+exports.getDataForAllAPIs1Month = (req, res) => getDataForAllAPIs(req, res);
