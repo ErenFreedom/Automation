@@ -37,7 +37,7 @@ const backdoorRoutes = require('./routes/backdoorRoutes');
 const sensorRoutes = require('./routes/sensorRoutes');
 const cloudRoutes = require('./routes/cloudRoutes');
 const sensorDataRoutes = require('./routes/sensorDataRoutes');
-const notificationRoutes = require('./routes/notificationRoutes'); // Add this line
+const notificationRoutes = require('./routes/notificationRoutes');
 
 // Import the MySQL client
 const db = require('./config/db');
@@ -98,7 +98,7 @@ app.use('/api', backdoorRoutes);
 app.use('/api', sensorRoutes);
 app.use('/api', cloudRoutes);
 app.use('/api/sensor-data', sensorDataRoutes);
-app.use('/api', notificationRoutes); // Adding the new route for notifications
+app.use('/api', notificationRoutes);
 
 // Start the scheduler
 require('./scheduler');

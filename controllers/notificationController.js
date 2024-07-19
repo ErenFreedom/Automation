@@ -56,20 +56,15 @@ exports.checkThresholds = async () => {
                     }
 
                     results.forEach(result => {
-                        const notificationQuery = `INSERT INTO notifications (user_email, sensor_api, value, timestamp, message)
-                                                   VALUES (?, ?, ?, ?, ?)`;
-                        const notificationValues = [threshold.user_email, result.sensor_api, result.value, result.timestamp, `Threshold exceeded for ${result.sensor_api}`];
-
-                        db.query(notificationQuery, notificationValues, (err) => {
-                            if (err) {
-                                console.error('Error inserting notification:', err);
-                            }
-                        });
+                        console.log(`Threshold exceeded for ${result.sensor_api}: Value = ${result.value} at ${result.timestamp}`);
                     });
                 });
             });
         });
     });
+
+    // Schedule the next check
+    setTimeout(exports.checkThresholds, 60000); // Check every minute
 };
 
 exports.getNotifications = async (req, res) => {
@@ -79,14 +74,21 @@ exports.getNotifications = async (req, res) => {
         const decoded = jwt.verify(token, SECRET_KEY);
         const { email } = decoded;
 
-        const query = `SELECT * FROM notifications WHERE user_email = ? ORDER BY timestamp DESC`;
-        db.query(query, [email], (err, results) => {
+        identifyTable(email, (err, table) => {
             if (err) {
-                console.error('Error fetching notifications:', err);
-                return res.status(500).send('Error fetching notifications');
+                console.error('Error identifying table:', err);
+                return res.status(500).send('Error identifying table');
             }
 
-            res.status(200).json(results);
+            const query = `SELECT sensor_api, value, timestamp FROM ${table} WHERE value > (SELECT threshold_value FROM thresholds WHERE user_email = ? AND sensor_api = ${table}.sensor_api) ORDER BY timestamp DESC`;
+            db.query(query, [email], (err, results) => {
+                if (err) {
+                    console.error('Error fetching notifications:', err);
+                    return res.status(500).send('Error fetching notifications');
+                }
+
+                res.status(200).json(results);
+            });
         });
     } catch (error) {
         console.error('Error:', error);
