@@ -55,8 +55,7 @@ const GraphPage = () => {
     };
 
     useEffect(() => {
-        if (graphData && graphData.length > 0 && chartRef.current) {
-            const ctx = chartRef.current.getContext('2d');
+        if (graphData && graphData.length > 0) {
             const apiData = graphData.find(apiData => apiData.api === sensorApi);
             if (apiData) {
                 const convertedData = convertTimestamps(apiData.data);
@@ -65,53 +64,58 @@ const GraphPage = () => {
                 const sortedData = filteredData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
                 console.log('Sorted Data:', sortedData);
 
-                const datasets = [{
-                    label: apiData.api,
-                    data: sortedData.map(item => ({ x: new Date(item.timestamp), y: item.value })),
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 2,
-                    pointRadius: 3,
-                    pointHoverRadius: 5,
-                    fill: false,
-                    spanGaps: true, // Handle gaps in the data
-                }];
+                if (chartRef.current) {
+                    const ctx = chartRef.current.getContext('2d');
+                    const datasets = [{
+                        label: apiData.api,
+                        data: sortedData.map(item => ({ x: new Date(item.timestamp), y: item.value })),
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        fill: false,
+                        spanGaps: true, // Handle gaps in the data
+                    }];
 
-                if (window.myChart) {
-                    window.myChart.destroy();
-                }
+                    if (window.myChart) {
+                        window.myChart.destroy();
+                    }
 
-                window.myChart = new Chart(ctx, {
-                    type: 'line',
-                    data: { datasets },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: { mode: 'index', intersect: false },
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function (context) {
-                                        const date = new Date(context.parsed.x).toLocaleString();
-                                        const value = context.parsed.y;
-                                        return `Value: ${value}, Timestamp: ${date}`;
+                    window.myChart = new Chart(ctx, {
+                        type: 'line',
+                        data: { datasets },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: { mode: 'index', intersect: false },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            const date = new Date(context.parsed.x).toLocaleString();
+                                            const value = context.parsed.y;
+                                            return `Value: ${value}, Timestamp: ${date}`;
+                                        }
                                     }
                                 }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                type: 'time',
-                                time: { unit: 'hour' },
-                                title: { display: true, text: 'Time' },
-                                ticks: { autoSkip: true, maxTicksLimit: 10 }
                             },
-                            y: {
-                                beginAtZero: true,
-                                title: { display: true, text: 'Value' }
+                            scales: {
+                                x: {
+                                    type: 'time',
+                                    time: { unit: 'hour' },
+                                    title: { display: true, text: 'Time' },
+                                    ticks: { autoSkip: true, maxTicksLimit: 10 }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    title: { display: true, text: 'Value' }
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                } else {
+                    console.error('chartRef.current is null');
+                }
             }
         }
     }, [graphData, sensorApi, timeWindow]);
