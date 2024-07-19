@@ -46,7 +46,7 @@ exports.setThresholds = async (req, res) => {
                 return res.status(500).send('Error identifying table');
             }
 
-            let query = 'INSERT INTO thresholds (table_name, sensor_api, threshold_value) VALUES ';
+            let query = 'INSERT INTO thresholds (user_email, sensor_api, threshold_value) VALUES ';
             const values = [];
 
             thresholds.forEach((threshold, index) => {
@@ -54,7 +54,7 @@ exports.setThresholds = async (req, res) => {
                 if (index < thresholds.length - 1) {
                     query += ', ';
                 }
-                values.push(table, threshold.sensorApi, threshold.thresholdValue);
+                values.push(email, threshold.sensorApi, threshold.thresholdValue);
             });
 
             query += ' ON DUPLICATE KEY UPDATE threshold_value = VALUES(threshold_value)';

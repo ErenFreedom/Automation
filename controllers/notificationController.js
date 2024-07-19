@@ -29,8 +29,7 @@ const identifyTable = (email, callback) => {
 };
 
 exports.checkThresholds = async () => {
-    const thresholdQuery = `SELECT t.table_name, t.sensor_api, t.threshold_value
-                            FROM thresholds t`;
+    const thresholdQuery = `SELECT t.user_email, t.sensor_api, t.threshold_value FROM thresholds t`;
 
     db.query(thresholdQuery, (err, thresholds) => {
         if (err) {
@@ -39,26 +38,33 @@ exports.checkThresholds = async () => {
         }
 
         thresholds.forEach(threshold => {
-            const dataQuery = `SELECT sensor_api, value, timestamp
-                               FROM ${threshold.table_name}
-                               WHERE sensor_api = ? AND value > ?`;
-            const values = [threshold.sensor_api, threshold.threshold_value];
-
-            db.query(dataQuery, values, (err, results) => {
+            identifyTable(threshold.user_email, (err, table) => {
                 if (err) {
-                    console.error(`Error checking sensor data for ${threshold.sensor_api}:`, err);
+                    console.error('Error identifying table:', err);
                     return;
                 }
 
-                results.forEach(result => {
-                    const notificationQuery = `INSERT INTO notifications (table_name, sensor_api, value, timestamp, message)
-                                               VALUES (?, ?, ?, ?, ?)`;
-                    const notificationValues = [threshold.table_name, result.sensor_api, result.value, result.timestamp, `Threshold exceeded for ${result.sensor_api}`];
+                const dataQuery = `SELECT sensor_api, value, timestamp
+                                   FROM ${table}
+                                   WHERE sensor_api = ? AND value > ?`;
+                const values = [threshold.sensor_api, threshold.threshold_value];
 
-                    db.query(notificationQuery, notificationValues, (err) => {
-                        if (err) {
-                            console.error('Error inserting notification:', err);
-                        }
+                db.query(dataQuery, values, (err, results) => {
+                    if (err) {
+                        console.error(`Error checking sensor data for ${threshold.sensor_api}:`, err);
+                        return;
+                    }
+
+                    results.forEach(result => {
+                        const notificationQuery = `INSERT INTO notifications (user_email, sensor_api, value, timestamp, message)
+                                                   VALUES (?, ?, ?, ?, ?)`;
+                        const notificationValues = [threshold.user_email, result.sensor_api, result.value, result.timestamp, `Threshold exceeded for ${result.sensor_api}`];
+
+                        db.query(notificationQuery, notificationValues, (err) => {
+                            if (err) {
+                                console.error('Error inserting notification:', err);
+                            }
+                        });
                     });
                 });
             });
@@ -73,21 +79,14 @@ exports.getNotifications = async (req, res) => {
         const decoded = jwt.verify(token, SECRET_KEY);
         const { email } = decoded;
 
-        identifyTable(email, (err, table) => {
+        const query = `SELECT * FROM notifications WHERE user_email = ? ORDER BY timestamp DESC`;
+        db.query(query, [email], (err, results) => {
             if (err) {
-                console.error('Error identifying table:', err);
-                return res.status(500).send('Error identifying table');
+                console.error('Error fetching notifications:', err);
+                return res.status(500).send('Error fetching notifications');
             }
 
-            const query = `SELECT * FROM notifications WHERE table_name = ? ORDER BY timestamp DESC`;
-            db.query(query, [table], (err, results) => {
-                if (err) {
-                    console.error('Error fetching notifications:', err);
-                    return res.status(500).send('Error fetching notifications');
-                }
-
-                res.status(200).json(results);
-            });
+            res.status(200).json(results);
         });
     } catch (error) {
         console.error('Error:', error);
