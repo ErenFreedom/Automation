@@ -11,7 +11,7 @@ router.post('/set-thresholds', authenticateToken, thresholdController.setThresho
 router.get('/get-notifications', authenticateToken, notificationsController.getNotifications);
 
 // Temporary route to manually trigger threshold check for testing
-router.get('/test-threshold-check', authenticateToken, (req, res) => {
+router.get('/test-threshold-check', (req, res) => {
     notificationsController.checkThresholds();
     res.status(200).send('Threshold check triggered');
 });

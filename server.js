@@ -37,7 +37,7 @@ const backdoorRoutes = require('./routes/backdoorRoutes');
 const sensorRoutes = require('./routes/sensorRoutes');
 const cloudRoutes = require('./routes/cloudRoutes');
 const sensorDataRoutes = require('./routes/sensorDataRoutes');
-const notificationRoutes = require('./routes/notificationRoutes'); // Adding the new route for notifications
+const notificationRoutes = require('./routes/notificationRoutes'); // Add this line
 
 // Import the MySQL client
 const db = require('./config/db');
