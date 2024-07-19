@@ -60,7 +60,7 @@ exports.checkThresholds = async () => {
                         return;
                     }
 
-                    console.log(`Results for ${threshold.sensor_api}:`, results);
+                    console.log(`Results for ${threshold.sensor_api} in ${table}:`, results);
 
                     results.forEach(result => {
                         const alert = {
