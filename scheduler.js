@@ -1,8 +1,8 @@
-// scheduler.js
 const cron = require('node-cron');
-const { checkThresholds } = require('./controllers/monitorController');
+const notificationsController = require('./controllers/notificationsController');
 
 // Schedule the task to run every minute
 cron.schedule('* * * * *', () => {
-    checkThresholds();
+    console.log('Running threshold check...');
+    notificationsController.checkThresholds();
 });

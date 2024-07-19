@@ -1,12 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const authenticateToken = require('../middlewares/authenticateToken');
-const notificationController = require('../controllers/notificationController');
+const notificationsController = require('../controllers/notificationsController');
+const thresholdController = require('../controllers/thresholdController');
 
-// Get notifications for a user
-router.get('/notifications', authenticateToken, notificationController.getNotifications);
+// Route to set multiple thresholds
+router.post('/set-thresholds', authenticateToken, thresholdController.setThresholds);
 
-// Mark notifications as read
-router.put('/notifications/mark-read', authenticateToken, notificationController.markNotificationsAsRead);
+// Route to get notifications
+router.get('/get-notifications', authenticateToken, notificationsController.getNotifications);
+
+// Temporary route to manually trigger threshold check for testing
+router.get('/test-threshold-check', authenticateToken, (req, res) => {
+    notificationsController.checkThresholds();
+    res.status(200).send('Threshold check triggered');
+});
 
 module.exports = router;
