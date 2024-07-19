@@ -7,13 +7,20 @@ const Report = () => {
     const dispatch = useDispatch();
     const [timeOption, setTimeOption] = useState('today');
     const [hours, setHours] = useState('');
-    const [startTime, setStartTime] = useState('');
-    const [endTime, setEndTime] = useState('');
+    const [customDate, setCustomDate] = useState('');
     const [format, setFormat] = useState('csv');
     const loading = useSelector((state) => state.report.loading);
     const error = useSelector((state) => state.report.error);
 
     const handleGenerateReport = async () => {
+        let startTime, endTime;
+
+        if (timeOption === 'custom') {
+            const [day, month, year] = customDate.split('/');
+            startTime = new Date(`${year}-${month}-${day}T00:00:00.000Z`).toISOString();
+            endTime = new Date(`${year}-${month}-${day}T23:59:59.999Z`).toISOString();
+        }
+
         const params = {
             timeOption,
             hours: timeOption === 'today' ? hours : undefined,
@@ -61,19 +68,13 @@ const Report = () => {
 
                 {timeOption === 'custom' && (
                     <div>
-                        <label htmlFor="startTime">Start Time:</label>
+                        <label htmlFor="customDate">Enter Date (dd/mm/yyyy):</label>
                         <input
-                            type="datetime-local"
-                            id="startTime"
-                            value={startTime}
-                            onChange={(e) => setStartTime(e.target.value)}
-                        />
-                        <label htmlFor="endTime">End Time:</label>
-                        <input
-                            type="datetime-local"
-                            id="endTime"
-                            value={endTime}
-                            onChange={(e) => setEndTime(e.target.value)}
+                            type="text"
+                            id="customDate"
+                            value={customDate}
+                            onChange={(e) => setCustomDate(e.target.value)}
+                            placeholder="dd/mm/yyyy"
                         />
                     </div>
                 )}
