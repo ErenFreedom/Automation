@@ -11,8 +11,8 @@
   padding: 40px;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: 50%; /* Adjust the width to cover 50% of the screen */
-  max-width: 800px; /* Set a maximum width to prevent it from getting too large */
+  width: 50%;
+  max-width: 800px;
 }
 
 .report-form h2 {
@@ -22,21 +22,22 @@
 
 .report-form label {
   display: block;
-  margin-top: 20px; /* Increase the margin-top for better spacing */
+  margin-top: 20px;
 }
 
-.report-form select {
+.report-form select,
+.report-form input {
   width: 100%;
-  padding: 12px; /* Increase the padding for better appearance */
-  margin-top: 10px; /* Increase the margin-top for better spacing */
+  padding: 12px;
+  margin-top: 10px;
   border-radius: 4px;
   border: 1px solid #ddd;
 }
 
 .report-form button {
   width: 100%;
-  padding: 15px; /* Increase the padding for better appearance */
-  margin-top: 30px; /* Increase the margin-top for better spacing */
+  padding: 15px;
+  margin-top: 30px;
   background-color: #007bff;
   color: #fff;
   border: none;
@@ -46,4 +47,10 @@
 
 .report-form button:hover {
   background-color: #0056b3;
+}
+
+.error {
+  color: red;
+  margin-top: 20px;
+  text-align: center;
 }

@@ -1,90 +1,98 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchReport } from '../../actions/reportActions';
 import './Report.css';
 
 const Report = () => {
-  const { userId } = useParams();
-  const [table, setTable] = useState('');
-  const [timeRange, setTimeRange] = useState('today');
-  const [specificTime, setSpecificTime] = useState('');
-  const [documentType, setDocumentType] = useState('');
+    const dispatch = useDispatch();
+    const [timeOption, setTimeOption] = useState('today');
+    const [hours, setHours] = useState('');
+    const [startTime, setStartTime] = useState('');
+    const [endTime, setEndTime] = useState('');
+    const [format, setFormat] = useState('csv');
+    const loading = useSelector((state) => state.report.loading);
+    const error = useSelector((state) => state.report.error);
 
-  const handleGenerateReport = async () => {
-    try {
-      console.log('Sending request with:', {
-        table,
-        timeWindow: specificTime || timeRange,
-        format: documentType,
-      });
+    const handleGenerateReport = async () => {
+        const params = {
+            timeOption,
+            hours: timeOption === 'today' ? hours : undefined,
+            startTime: timeOption === 'custom' ? startTime : undefined,
+            endTime: timeOption === 'custom' ? endTime : undefined,
+            format,
+        };
 
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/report/generate`, {
-        table,
-        timeWindow: specificTime || timeRange,
-        format: documentType,
-      }, {
-        responseType: 'blob',
-      });
+        const fileData = await dispatch(fetchReport(params));
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `report.${documentType}`);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
-    } catch (error) {
-      console.error('Error generating report:', error);
-    }
-  };
+        if (fileData) {
+            const url = window.URL.createObjectURL(new Blob([fileData]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `report.${format}`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+        }
+    };
 
-  return (
-    <div className="report-page-container">
-      <div className="report-form">
-        <h2>Generate Report for User {userId}</h2>
+    return (
+        <div className="report-page-container">
+            <div className="report-form">
+                <h2>Generate Report</h2>
 
-        <label htmlFor="table">Select Table:</label>
-        <select id="table" value={table} onChange={(e) => setTable(e.target.value)}>
-          <option value="">Select...</option>
-          <option value="temp">Temperature</option>
-          <option value="pressure">Pressure</option>
-          <option value="rh">Relative Humidity</option>
-          <option value="humidity">Humidity</option>
-        </select>
+                <label htmlFor="timeOption">Select Time Option:</label>
+                <select id="timeOption" value={timeOption} onChange={(e) => setTimeOption(e.target.value)}>
+                    <option value="today">Today</option>
+                    <option value="custom">Custom</option>
+                </select>
 
-        <label htmlFor="timeRange">Select Time Range:</label>
-        <select id="timeRange" value={timeRange} onChange={(e) => setTimeRange(e.target.value)}>
-          <option value="today">Today</option>
-          <option value="week">Last 1 Week</option>
-          <option value="month">Last 1 Month</option>
-        </select>
+                {timeOption === 'today' && (
+                    <div>
+                        <label htmlFor="hours">Select Hours:</label>
+                        <select id="hours" value={hours} onChange={(e) => setHours(e.target.value)}>
+                            {Array.from({ length: 24 }, (_, i) => (
+                                <option key={i} value={i + 1}>
+                                    {i + 1} {i + 1 === 1 ? 'hour' : 'hours'}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
 
-        <label htmlFor="specificTime">Select Specific Time:</label>
-        <select id="specificTime" value={specificTime} onChange={(e) => setSpecificTime(e.target.value)}>
-          <option value="">Select...</option>
-          {timeRange === 'today' &&
-            Array.from({ length: 24 }, (_, i) => (
-              <option key={i} value={`${i + 1}hour`}>{`Past ${i + 1} hour${i + 1 > 1 ? 's' : ''}`}</option>
-            ))}
-          {timeRange === 'week' &&
-            Array.from({ length: 7 }, (_, i) => (
-              <option key={i} value={`${i + 1}day`}>{`Past ${i + 1} day${i + 1 > 1 ? 's' : ''}`}</option>
-            ))}
-          {timeRange === 'month' && <option value="custom">Custom Date</option>}
-        </select>
+                {timeOption === 'custom' && (
+                    <div>
+                        <label htmlFor="startTime">Start Time:</label>
+                        <input
+                            type="datetime-local"
+                            id="startTime"
+                            value={startTime}
+                            onChange={(e) => setStartTime(e.target.value)}
+                        />
+                        <label htmlFor="endTime">End Time:</label>
+                        <input
+                            type="datetime-local"
+                            id="endTime"
+                            value={endTime}
+                            onChange={(e) => setEndTime(e.target.value)}
+                        />
+                    </div>
+                )}
 
-        <label htmlFor="documentType">Select Document Type:</label>
-        <select id="documentType" value={documentType} onChange={(e) => setDocumentType(e.target.value)}>
-          <option value="">Select...</option>
-          <option value="xml">XML</option>
-          <option value="excel">Excel</option>
-          <option value="csv">CSV</option>
-        </select>
+                <label htmlFor="format">Select Format:</label>
+                <select id="format" value={format} onChange={(e) => setFormat(e.target.value)}>
+                    <option value="csv">CSV</option>
+                    <option value="excel">Excel</option>
+                    <option value="pdf">PDF</option>
+                </select>
 
-        <button onClick={handleGenerateReport}>Generate Report</button>
-      </div>
-    </div>
-  );
+                <button onClick={handleGenerateReport} disabled={loading}>
+                    {loading ? 'Generating Report...' : 'Generate Report'}
+                </button>
+
+                {error && <p className="error">{error}</p>}
+            </div>
+        </div>
+    );
 };
 
 export default Report;
