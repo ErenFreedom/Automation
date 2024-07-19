@@ -81,9 +81,9 @@ const getDataForAllAPIsWithTimeWindow = (req, res, timeWindow) => {
                         startTime = new Date(0); // Default to all data if no time window is specified
                 }
 
-                startTime = startTime.toISOString();
+                const filteredData = data.filter(item => new Date(item.timestamp) >= startTime);
 
-                const filteredData = data.filter(item => new Date(item.timestamp).toISOString() >= startTime);
+                console.log('Filtered Data:', filteredData);
 
                 const groupedData = filteredData.reduce((acc, item) => {
                     if (!acc[item.sensor_api]) {
