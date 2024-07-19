@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authenticateToken = require('../middlewares/authenticateToken');
-const notificationsController = require('../controllers/notificationsController');
+const notificationsController = require('../controllers/notificationController');
 const thresholdController = require('../controllers/thresholdController');
 
 // Route to set multiple thresholds
