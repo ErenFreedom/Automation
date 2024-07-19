@@ -30,7 +30,7 @@ const identifyTable = (email, callback) => {
 
 // Fetch all data from the sensor data table
 const fetchAllData = (table, callback) => {
-    const query = `SELECT sensor_api, value, timestamp FROM ${table} ORDER BY id ASC`;
+    const query = `SELECT id, sensor_api, value, timestamp FROM ${table} ORDER BY id ASC`;
 
     db.query(query, (err, results) => {
         if (err) {
