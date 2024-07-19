@@ -7,27 +7,29 @@ const Report = () => {
     const dispatch = useDispatch();
     const [timeOption, setTimeOption] = useState('today');
     const [hours, setHours] = useState('');
-    const [customDate, setCustomDate] = useState('');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
     const [format, setFormat] = useState('csv');
     const loading = useSelector((state) => state.report.loading);
     const error = useSelector((state) => state.report.error);
 
+    const convertToISO = (dateString) => {
+        const [day, month, year] = dateString.split('/');
+        return new Date(`${year}-${month}-${day}`).toISOString();
+    };
+
     const handleGenerateReport = async () => {
-        let startTime, endTime;
-
-        if (timeOption === 'custom') {
-            const [day, month, year] = customDate.split('/');
-            startTime = new Date(`${year}-${month}-${day}T00:00:00.000Z`).toISOString();
-            endTime = new Date(`${year}-${month}-${day}T23:59:59.999Z`).toISOString();
-        }
-
-        const params = {
+        let params = {
             timeOption,
-            hours: timeOption === 'today' ? hours : undefined,
-            startTime: timeOption === 'custom' ? startTime : undefined,
-            endTime: timeOption === 'custom' ? endTime : undefined,
             format,
         };
+
+        if (timeOption === 'today') {
+            params.hours = hours;
+        } else if (timeOption === 'custom') {
+            params.startTime = convertToISO(startDate);
+            params.endTime = convertToISO(endDate);
+        }
 
         const fileData = await dispatch(fetchReport(params));
 
@@ -68,13 +70,19 @@ const Report = () => {
 
                 {timeOption === 'custom' && (
                     <div>
-                        <label htmlFor="customDate">Enter Date (dd/mm/yyyy):</label>
+                        <label htmlFor="startDate">Start Date (dd/mm/yyyy):</label>
                         <input
                             type="text"
-                            id="customDate"
-                            value={customDate}
-                            onChange={(e) => setCustomDate(e.target.value)}
-                            placeholder="dd/mm/yyyy"
+                            id="startDate"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                        />
+                        <label htmlFor="endDate">End Date (dd/mm/yyyy):</label>
+                        <input
+                            type="text"
+                            id="endDate"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
                         />
                     </div>
                 )}
