@@ -106,7 +106,7 @@ app.use('/api', notificationRoutes);
 app.use('/api/client-sensor-data', clientSensorDataRoutes);
 app.use('/api/client-graph-data', clientGraphRoutes);
 app.use('/api/client-report', clientReportRoutes);
-app.use('/api/client-notifications', clientNotificationRoutes);
+app.use('/api', clientNotificationRoutes);
 
 // Start the scheduler
 require('./scheduler');
