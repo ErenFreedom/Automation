@@ -5,6 +5,8 @@ import reportReducer from './reportReducer';
 import notificationReducer from './notificationReducer';
 import sensorReducer from './sensorReducer';
 import clientDataReducer from './clientDataReducer';
+import clientNotificationReducer from './clientNotificationReducer'; // New client notification reducer
+import clientSensorReducer from './clientSensorReducer'; // New client sensor reducer
 
 export default combineReducers({
     data: dataReducer,
@@ -12,5 +14,7 @@ export default combineReducers({
     report: reportReducer,
     notifications: notificationReducer,
     sensors: sensorReducer,
-    clientData: clientDataReducer, // Add the client data reducer here
+    clientData: clientDataReducer,
+    clientNotifications: clientNotificationReducer, // Add client notification reducer here
+    clientSensors: clientSensorReducer, // Add client sensor reducer here
 });

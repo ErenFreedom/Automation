@@ -48,7 +48,7 @@ const ClientDashboardHeader = () => {
 
   const handleNotificationClick = () => {
     console.log('Bell icon clicked. Navigating to notifications...');
-    navigate('/notifications');
+    navigate('/client-notifications');
   };
 
   return (
