@@ -10,10 +10,7 @@ router.post('/set-thresholds', authenticateToken, thresholdController.setThresho
 // Route to get notifications
 router.get('/get-notifications', authenticateToken, notificationsController.getNotifications);
 
-// Temporary route to manually trigger threshold check for testing
-router.get('/test-threshold-check', authenticateToken, (req, res) => {
-    notificationsController.checkThresholds();
-    res.status(200).send('Threshold check triggered');
-});
+// Route to get sensor APIs
+router.get('/sensor-apis', authenticateToken, thresholdController.getSensorApis);
 
 module.exports = router;

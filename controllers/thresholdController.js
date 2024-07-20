@@ -105,3 +105,33 @@ exports.setThresholds = async (req, res) => {
         res.status(401).json({ message: 'Unauthorized' });
     }
 };
+
+exports.getSensorApis = async (req, res) => {
+    const token = req.headers.authorization.split(' ')[1];
+
+    try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const { email } = decoded;
+
+        identifyTable(email, (err, table) => {
+            if (err) {
+                console.error('Error identifying table:', err);
+                return res.status(500).send('Error identifying table');
+            }
+
+            const query = `SELECT DISTINCT sensor_api FROM ${table}`;
+            db.query(query, (err, results) => {
+                if (err) {
+                    console.error('Error fetching sensor APIs:', err);
+                    return res.status(500).send('Error fetching sensor APIs');
+                }
+
+                const sensorApis = results.map(result => result.sensor_api);
+                res.status(200).json(sensorApis);
+            });
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(401).json({ message: 'Unauthorized' });
+    }
+};
