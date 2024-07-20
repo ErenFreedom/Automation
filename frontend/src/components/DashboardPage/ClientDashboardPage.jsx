@@ -1,20 +1,39 @@
+// src/components/ClientDashboardPage/ClientDashboardPage.jsx
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchData } from '../../actions/dataActions';
+import { fetchData, updateData } from '../../actions/dataActions';
 import ClientDashboardHeader from '../DashboardHeader/ClientDashboardHeader';
+import 'event-source-polyfill';
 import './DashboardPage.css';
 
 const ClientDashboardPage = () => {
   const { userId } = useParams();
   const dispatch = useDispatch();
   const data = useSelector((state) => state.data.data);
+  const loading = useSelector((state) => state.data.loading);
   const error = useSelector((state) => state.data.error);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-      dispatch(fetchData({ url: `${process.env.REACT_APP_API_URL}/latest`, token }));
+      dispatch(fetchData({ url: '/sensor-data/fetch-last-sensor-data-each-api', token }));
+
+      const eventSource = new EventSource(`${process.env.REACT_APP_API_URL}/sensor-data/stream?token=${token}`);
+
+      eventSource.onmessage = (event) => {
+        const newData = JSON.parse(event.data);
+        dispatch(updateData(newData));
+      };
+
+      eventSource.onerror = (error) => {
+        console.error('EventSource failed:', error);
+        eventSource.close();
+      };
+
+      return () => {
+        eventSource.close();
+      };
     }
   }, [dispatch]);
 
@@ -27,37 +46,16 @@ const ClientDashboardPage = () => {
       <div className="dashboard-page">
         <div className="dashboard-content">
           <div className="rectangles">
+            {loading && <p>Loading data...</p>}
             {error && <p className="error">{error}</p>}
-            {data ? (
-              <>
-                <Link to={`/temperature/${userId}`} className="rectangle-link">
-                  <div className="rectangle">
-                    <p>Current Temperature: {data.temp?.value}</p>
-                    <p>Updated At: {data.temp?.timestamp}</p>
-                  </div>
-                </Link>
-                <Link to={`/pressure/${userId}`} className="rectangle-link">
-                  <div className="rectangle">
-                    <p>Current Pressure: {data.pressure?.value}</p>
-                    <p>Updated At: {data.pressure?.timestamp}</p>
-                  </div>
-                </Link>
-                <Link to={`/rh/${userId}`} className="rectangle-link">
-                  <div className="rectangle">
-                    <p>Current Rh: {data.rh?.value}</p>
-                    <p>Updated At: {data.rh?.timestamp}</p>
-                  </div>
-                </Link>
-                <Link to={`/humidity/${userId}`} className="rectangle-link">
-                  <div className="rectangle">
-                    <p>Current Humidity: {data.humidity?.value}</p>
-                    <p>Updated At: {data.humidity?.timestamp}</p>
-                  </div>
-                </Link>
-              </>
-            ) : (
-              <p>Loading data...</p>
-            )}
+            {data && data.map((apiData) => (
+              <Link key={apiData.sensor_api} to={`/graph/${userId}/${encodeURIComponent(apiData.sensor_api)}`} className="rectangle-link">
+                <div className="rectangle">
+                  <p>{apiData.sensor_api.replace(/^.*[\\/]/, '')} Value: {apiData.value}</p>
+                  <p>Updated At: {apiData.timestamp}</p>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </div>
