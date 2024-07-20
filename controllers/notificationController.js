@@ -91,9 +91,14 @@ exports.getNotifications = async (req, res) => {
                 return res.status(500).send('Error identifying table');
             }
 
-            const query = `SELECT sensor_api, value, timestamp
-                           FROM ${table}
-                           WHERE value > (SELECT threshold_value FROM thresholds WHERE user_email = ? AND sensor_api = ${table}.sensor_api)`;
+            const query = `
+                SELECT s.sensor_api, s.value, s.timestamp
+                FROM ${table} s
+                JOIN thresholds t ON s.sensor_api = t.sensor_api AND t.user_email = ?
+                WHERE s.value > t.threshold_value
+                ORDER BY s.timestamp DESC
+            `;
+
             db.query(query, [email], (err, results) => {
                 if (err) {
                     console.error('Error fetching notifications:', err);
