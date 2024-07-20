@@ -1,4 +1,3 @@
-// src/components/ClientDashboardPage/ClientDashboardPage.jsx
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -37,6 +36,10 @@ const ClientDashboardPage = () => {
     }
   }, [dispatch]);
 
+  useEffect(() => {
+    console.log('Data:', data);
+  }, [data]);
+
   return (
     <div className="dashboard-page-container">
       <ClientDashboardHeader />
@@ -48,14 +51,18 @@ const ClientDashboardPage = () => {
           <div className="rectangles">
             {loading && <p>Loading data...</p>}
             {error && <p className="error">{error}</p>}
-            {data && data.map((apiData) => (
-              <Link key={apiData.sensor_api} to={`/graph/${userId}/${encodeURIComponent(apiData.sensor_api)}`} className="rectangle-link">
-                <div className="rectangle">
-                  <p>{apiData.sensor_api.replace(/^.*[\\/]/, '')} Value: {apiData.value}</p>
-                  <p>Updated At: {apiData.timestamp}</p>
-                </div>
-              </Link>
-            ))}
+            {Array.isArray(data) ? (
+              data.map((apiData) => (
+                <Link key={apiData.sensor_api} to={`/graph/${userId}/${encodeURIComponent(apiData.sensor_api)}`} className="rectangle-link">
+                  <div className="rectangle">
+                    <p>{apiData.sensor_api.replace(/^.*[\\/]/, '')} Value: {apiData.value}</p>
+                    <p>Updated At: {apiData.timestamp}</p>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <p>No data available</p>
+            )}
           </div>
         </div>
       </div>
