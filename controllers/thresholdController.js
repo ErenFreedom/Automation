@@ -28,6 +28,17 @@ const identifyTable = (email, callback) => {
     });
 };
 
+const fetchUniqueSensorApis = (table, callback) => {
+    const query = `SELECT DISTINCT sensor_api FROM ${table}`;
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error fetching unique sensor APIs:', err);
+            return callback(err);
+        }
+        callback(null, results.map(row => row.sensor_api));
+    });
+};
+
 exports.setThresholds = async (req, res) => {
     const token = req.headers.authorization.split(' ')[1];
 
@@ -46,20 +57,18 @@ exports.setThresholds = async (req, res) => {
                 return res.status(500).send('Error identifying table');
             }
 
-            // Fetch unique sensor APIs from the sensor data table
-            const sensorApiQuery = `SELECT DISTINCT sensor_api FROM ${table}`;
-            db.query(sensorApiQuery, (err, sensorApis) => {
+            fetchUniqueSensorApis(table, (err, uniqueSensorApis) => {
                 if (err) {
-                    console.error('Error fetching sensor APIs:', err);
-                    return res.status(500).send('Error fetching sensor APIs');
+                    console.error('Error fetching unique sensor APIs:', err);
+                    return res.status(500).send('Error fetching unique sensor APIs');
                 }
 
-                const validThresholds = thresholds.filter(threshold => 
-                    sensorApis.some(sensor => sensor.sensor_api === threshold.sensorApi)
+                const validThresholds = thresholds.filter(threshold =>
+                    uniqueSensorApis.includes(threshold.sensorApi)
                 );
 
                 if (validThresholds.length === 0) {
-                    return res.status(400).send('No valid sensor APIs found');
+                    return res.status(400).send('No valid sensor APIs found in thresholds');
                 }
 
                 let query = 'INSERT INTO thresholds (user_email, sensor_api, threshold_value) VALUES ';
