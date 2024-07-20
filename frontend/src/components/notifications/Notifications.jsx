@@ -65,12 +65,15 @@ const Notifications = () => {
         <p>Loading...</p>
       ) : (
         <div className="notifications-list">
-          {Array.isArray(notifications) && notifications.map((alert, index) => (
-            <div key={index} className="notification-item">
-              <p>Sensor API: {alert.sensorApi}</p>
-              <p>Value: {alert.value}</p>
-              <p>Timestamp: {new Date(alert.timestamp).toLocaleString()}</p>
-            </div>
+          {Object.keys(notifications).map((sensorApi, index) => (
+            notifications[sensorApi].map((alert, idx) => (
+              <div key={`${index}-${idx}`} className="notification-item">
+                <p><strong>Sensor API:</strong> {sensorApi}</p>
+                <p><strong>Value:</strong> {alert.value}</p>
+                <p><strong>Timestamp:</strong> {new Date(alert.timestamp).toLocaleString()}</p>
+                <p><strong>Message:</strong> {alert.message}</p>
+              </div>
+            ))
           ))}
         </div>
       )}
