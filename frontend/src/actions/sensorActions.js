@@ -29,7 +29,7 @@ export const setThresholds = (thresholds) => async (dispatch) => {
 
   const token = localStorage.getItem('authToken');
   try {
-    const response = await axios.post(`${process.env.REACT_APP_API_URL}/set-thresholds`, { thresholds }, {
+    const response = await axios.post(`${process.env.REACT_APP_API_URL}/set-thresholds`, thresholds, {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
