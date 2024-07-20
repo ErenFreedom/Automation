@@ -46,25 +46,42 @@ exports.setThresholds = async (req, res) => {
                 return res.status(500).send('Error identifying table');
             }
 
-            let query = 'INSERT INTO thresholds (user_email, sensor_api, threshold_value) VALUES ';
-            const values = [];
-
-            thresholds.forEach((threshold, index) => {
-                query += '(?, ?, ?)';
-                if (index < thresholds.length - 1) {
-                    query += ', ';
-                }
-                values.push(email, threshold.sensorApi, threshold.thresholdValue);
-            });
-
-            query += ' ON DUPLICATE KEY UPDATE threshold_value = VALUES(threshold_value)';
-
-            db.query(query, values, (err, results) => {
+            // Fetch unique sensor APIs from the sensor data table
+            const sensorApiQuery = `SELECT DISTINCT sensor_api FROM ${table}`;
+            db.query(sensorApiQuery, (err, sensorApis) => {
                 if (err) {
-                    console.error('Error setting thresholds:', err);
-                    return res.status(500).send('Error setting thresholds');
+                    console.error('Error fetching sensor APIs:', err);
+                    return res.status(500).send('Error fetching sensor APIs');
                 }
-                res.status(200).send('Thresholds set successfully');
+
+                const validThresholds = thresholds.filter(threshold => 
+                    sensorApis.some(sensor => sensor.sensor_api === threshold.sensorApi)
+                );
+
+                if (validThresholds.length === 0) {
+                    return res.status(400).send('No valid sensor APIs found');
+                }
+
+                let query = 'INSERT INTO thresholds (user_email, sensor_api, threshold_value) VALUES ';
+                const values = [];
+
+                validThresholds.forEach((threshold, index) => {
+                    query += '(?, ?, ?)';
+                    if (index < validThresholds.length - 1) {
+                        query += ', ';
+                    }
+                    values.push(email, threshold.sensorApi, threshold.thresholdValue);
+                });
+
+                query += ' ON DUPLICATE KEY UPDATE threshold_value = VALUES(threshold_value)';
+
+                db.query(query, values, (err, results) => {
+                    if (err) {
+                        console.error('Error setting thresholds:', err);
+                        return res.status(500).send('Error setting thresholds');
+                    }
+                    res.status(200).send('Thresholds set successfully');
+                });
             });
         });
     } catch (error) {
