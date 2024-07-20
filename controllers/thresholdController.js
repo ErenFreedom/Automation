@@ -71,25 +71,32 @@ exports.setThresholds = async (req, res) => {
                     return res.status(400).send('No valid sensor APIs found in thresholds');
                 }
 
-                let query = 'INSERT INTO thresholds (user_email, sensor_api, threshold_value) VALUES ';
-                const values = [];
-
-                validThresholds.forEach((threshold, index) => {
-                    query += '(?, ?, ?)';
-                    if (index < validThresholds.length - 1) {
-                        query += ', ';
-                    }
-                    values.push(email, threshold.sensorApi, threshold.thresholdValue);
-                });
-
-                query += ' ON DUPLICATE KEY UPDATE threshold_value = VALUES(threshold_value)';
-
-                db.query(query, values, (err, results) => {
+                // Delete existing thresholds for this user
+                db.query('DELETE FROM thresholds WHERE user_email = ?', [email], (err) => {
                     if (err) {
-                        console.error('Error setting thresholds:', err);
-                        return res.status(500).send('Error setting thresholds');
+                        console.error('Error deleting existing thresholds:', err);
+                        return res.status(500).send('Error deleting existing thresholds');
                     }
-                    res.status(200).send('Thresholds set successfully');
+
+                    // Insert new thresholds
+                    let query = 'INSERT INTO thresholds (user_email, sensor_api, threshold_value) VALUES ';
+                    const values = [];
+
+                    validThresholds.forEach((threshold, index) => {
+                        query += '(?, ?, ?)';
+                        if (index < validThresholds.length - 1) {
+                            query += ', ';
+                        }
+                        values.push(email, threshold.sensorApi, threshold.thresholdValue);
+                    });
+
+                    db.query(query, values, (err, results) => {
+                        if (err) {
+                            console.error('Error setting thresholds:', err);
+                            return res.status(500).send('Error setting thresholds');
+                        }
+                        res.status(200).send('Thresholds set successfully');
+                    });
                 });
             });
         });
