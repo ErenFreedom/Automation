@@ -13,4 +13,7 @@ router.get('/get-notifications', authenticateToken, notificationsController.getN
 // Route to get sensor APIs
 router.get('/sensor-apis', authenticateToken, thresholdController.getSensorApis);
 
+router.get('/current-thresholds', authenticateToken, thresholdController.getCurrentThresholds);
+
+
 module.exports = router;

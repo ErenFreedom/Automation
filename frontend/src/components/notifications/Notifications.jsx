@@ -1,24 +1,25 @@
 // src/components/notifications/Notifications.jsx
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchSensorApis, setThresholds } from '../../actions/sensorActions';
+import { fetchSensorApis, setThresholds, fetchCurrentThresholds } from '../../actions/sensorActions';
 import { fetchAlerts } from '../../actions/notificationActions';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaEye } from 'react-icons/fa';
-import axios from 'axios';
 import './Notifications.css';
 
 const Notifications = () => {
   const dispatch = useDispatch();
   const notifications = useSelector((state) => state.notifications.alerts);
   const sensorApis = useSelector((state) => state.sensors.sensorApis);
+  const currentThresholds = useSelector((state) => state.sensors.currentThresholds);
   const [thresholds, setThresholdsState] = useState({});
   const [loading, setLoading] = useState(true);
   const [monitoring, setMonitoring] = useState(false);
 
   useEffect(() => {
     dispatch(fetchSensorApis());
+    dispatch(fetchCurrentThresholds());
     setLoading(false);
 
     const monitoringState = localStorage.getItem('monitoring');
@@ -26,24 +27,13 @@ const Notifications = () => {
       setMonitoring(true);
     }
 
-    // Fetch current thresholds from the backend
-    const fetchCurrentThresholds = async () => {
-      const token = localStorage.getItem('authToken');
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/current-thresholds`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const currentThresholds = response.data;
-        setThresholdsState(currentThresholds);
-      } catch (error) {
-        console.error('Error fetching current thresholds:', error);
-      }
-    };
-
-    fetchCurrentThresholds();
-  }, [dispatch]);
+    const savedThresholds = localStorage.getItem('thresholds');
+    if (savedThresholds) {
+      setThresholdsState(JSON.parse(savedThresholds));
+    } else {
+      setThresholdsState(currentThresholds);
+    }
+  }, [dispatch, currentThresholds]);
 
   useEffect(() => {
     if (monitoring) {
@@ -63,6 +53,7 @@ const Notifications = () => {
     }));
     try {
       await dispatch(setThresholds({ thresholds: thresholdArray }));
+      localStorage.setItem('thresholds', JSON.stringify(thresholds));
       toast.success('Thresholds set successfully!');
     } catch (error) {
       toast.error('Failed to set thresholds.');
@@ -70,10 +61,11 @@ const Notifications = () => {
   };
 
   const handleThresholdChange = (sensorApi, value) => {
-    setThresholdsState((prevThresholds) => ({
-      ...prevThresholds,
-      [sensorApi]: value
-    }));
+    setThresholdsState((prevThresholds) => {
+      const newThresholds = { ...prevThresholds, [sensorApi]: value };
+      localStorage.setItem('thresholds', JSON.stringify(newThresholds));
+      return newThresholds;
+    });
   };
 
   const handleMonitorToggle = () => {
@@ -97,7 +89,7 @@ const Notifications = () => {
               type="number" 
               id={sensorApi} 
               name={sensorApi} 
-              value={thresholds[sensorApi] || ''} 
+              value={thresholds[sensorApi] || currentThresholds[sensorApi] || ''} 
               onChange={(e) => handleThresholdChange(sensorApi, e.target.value)} 
             />
           </div>

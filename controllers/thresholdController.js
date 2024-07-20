@@ -135,3 +135,38 @@ exports.getSensorApis = async (req, res) => {
         res.status(401).json({ message: 'Unauthorized' });
     }
 };
+
+
+exports.getCurrentThresholds = async (req, res) => {
+    const token = req.headers.authorization.split(' ')[1];
+
+    try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const { email } = decoded;
+
+        identifyTable(email, (err, table) => {
+            if (err) {
+                console.error('Error identifying table:', err);
+                return res.status(500).send('Error identifying table');
+            }
+
+            const query = `SELECT sensor_api, threshold_value FROM thresholds WHERE user_email = ?`;
+            db.query(query, [email], (err, results) => {
+                if (err) {
+                    console.error('Error fetching current thresholds:', err);
+                    return res.status(500).send('Error fetching current thresholds');
+                }
+
+                const currentThresholds = {};
+                results.forEach(row => {
+                    currentThresholds[row.sensor_api] = row.threshold_value;
+                });
+
+                res.status(200).json(currentThresholds);
+            });
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(401).json({ message: 'Unauthorized' });
+    }
+};
