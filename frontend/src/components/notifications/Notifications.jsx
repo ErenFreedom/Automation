@@ -6,6 +6,7 @@ import { fetchAlerts } from '../../actions/notificationActions';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaEye } from 'react-icons/fa';
+import axios from 'axios';
 import './Notifications.css';
 
 const Notifications = () => {
@@ -24,6 +25,24 @@ const Notifications = () => {
     if (monitoringState === 'true') {
       setMonitoring(true);
     }
+
+    // Fetch current thresholds from the backend
+    const fetchCurrentThresholds = async () => {
+      const token = localStorage.getItem('authToken');
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/current-thresholds`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const currentThresholds = response.data;
+        setThresholdsState(currentThresholds);
+      } catch (error) {
+        console.error('Error fetching current thresholds:', error);
+      }
+    };
+
+    fetchCurrentThresholds();
   }, [dispatch]);
 
   useEffect(() => {
