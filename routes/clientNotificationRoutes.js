@@ -11,7 +11,7 @@ router.post('/client-set-thresholds', authenticateToken, clientThresholdControll
 router.get('/client-notifications/get-notifications', authenticateToken, clientNotificationController.getNotifications);
 
 // Route to get sensor APIs
-router.get('/client-sensor-api', authenticateToken, clientThresholdController.getSensorApis);
+router.get('/client-sensor-apis', authenticateToken, clientThresholdController.getSensorApis);
 
 router.get('/client-current-thresholds', authenticateToken, clientThresholdController.getCurrentThresholds);
 
