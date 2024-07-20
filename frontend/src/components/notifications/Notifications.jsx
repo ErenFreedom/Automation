@@ -19,6 +19,11 @@ const Notifications = () => {
   useEffect(() => {
     dispatch(fetchSensorApis());
     setLoading(false);
+
+    const monitoringState = localStorage.getItem('monitoring');
+    if (monitoringState === 'true') {
+      setMonitoring(true);
+    }
   }, [dispatch]);
 
   useEffect(() => {
@@ -52,9 +57,13 @@ const Notifications = () => {
     }));
   };
 
-  const handleMonitorNow = () => {
-    setMonitoring(true);
-    dispatch(fetchAlerts());
+  const handleMonitorToggle = () => {
+    const newMonitoringState = !monitoring;
+    setMonitoring(newMonitoringState);
+    if (newMonitoringState) {
+      dispatch(fetchAlerts());
+    }
+    localStorage.setItem('monitoring', newMonitoringState);
   };
 
   return (
@@ -76,7 +85,9 @@ const Notifications = () => {
         ))}
         <button className="set-thresholds-button" type="submit">Set Thresholds</button>
       </form>
-      <button className="monitor-button" onClick={handleMonitorNow}>Monitor Now</button>
+      <button className="monitor-button" onClick={handleMonitorToggle}>
+        {monitoring ? 'Stop Monitoring' : 'Monitor Now'}
+      </button>
       {monitoring && <FaEye className="monitoring-icon" />}
       <h2>Notifications</h2>
       {loading ? (
