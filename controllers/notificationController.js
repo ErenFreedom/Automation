@@ -39,6 +39,8 @@ exports.checkThresholds = async () => {
 
         console.log('Fetched Thresholds:', thresholds);
 
+        let alerts = [];
+
         thresholds.forEach(threshold => {
             identifyTable(threshold.user_email, (err, table) => {
                 if (err) {
@@ -67,9 +69,14 @@ exports.checkThresholds = async () => {
                             message: `Threshold exceeded for ${result.sensor_api}`
                         };
 
-                        // Store the alert in some in-memory store or logging mechanism
-                        console.log('Alert:', alert);
+                        // Collect the alert in the alerts array
+                        alerts.push(alert);
                     });
+
+                    // Log or process all alerts in bulk
+                    if (thresholds.indexOf(threshold) === thresholds.length - 1) {
+                        console.log('All Alerts:', alerts);
+                    }
                 });
             });
         });
