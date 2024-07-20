@@ -3,6 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSensorApis, setThresholds } from '../../actions/sensorActions';
 import { fetchAlerts } from '../../actions/notificationActions';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { FaEye } from 'react-icons/fa';
 import './Notifications.css';
 
 const Notifications = () => {
@@ -11,19 +14,35 @@ const Notifications = () => {
   const sensorApis = useSelector((state) => state.sensors.sensorApis);
   const [thresholds, setThresholdsState] = useState({});
   const [loading, setLoading] = useState(true);
+  const [monitoring, setMonitoring] = useState(false);
 
   useEffect(() => {
     dispatch(fetchSensorApis());
     setLoading(false);
   }, [dispatch]);
 
-  const handleSetThresholds = (e) => {
+  useEffect(() => {
+    if (monitoring) {
+      const interval = setInterval(() => {
+        dispatch(fetchAlerts());
+      }, 60000); // Fetch alerts every 60 seconds
+
+      return () => clearInterval(interval); // Cleanup interval on component unmount
+    }
+  }, [monitoring, dispatch]);
+
+  const handleSetThresholds = async (e) => {
     e.preventDefault();
     const thresholdArray = Object.keys(thresholds).map(sensorApi => ({
       sensorApi,
       thresholdValue: thresholds[sensorApi]
     }));
-    dispatch(setThresholds({ thresholds: thresholdArray }));
+    try {
+      await dispatch(setThresholds({ thresholds: thresholdArray }));
+      toast.success('Thresholds set successfully!');
+    } catch (error) {
+      toast.error('Failed to set thresholds.');
+    }
   };
 
   const handleThresholdChange = (sensorApi, value) => {
@@ -34,15 +53,13 @@ const Notifications = () => {
   };
 
   const handleMonitorNow = () => {
+    setMonitoring(true);
     dispatch(fetchAlerts());
-    const interval = setInterval(() => {
-      dispatch(fetchAlerts());
-    }, 60000); // Fetch alerts every 60 seconds
-    return () => clearInterval(interval); // Cleanup interval on component unmount
   };
 
   return (
     <div className="notifications-container">
+      <ToastContainer />
       <h2>Set Thresholds</h2>
       <form onSubmit={handleSetThresholds}>
         {Array.isArray(sensorApis) && sensorApis.map(sensorApi => (
@@ -60,6 +77,7 @@ const Notifications = () => {
         <button className="set-thresholds-button" type="submit">Set Thresholds</button>
       </form>
       <button className="monitor-button" onClick={handleMonitorNow}>Monitor Now</button>
+      {monitoring && <FaEye className="monitoring-icon" />}
       <h2>Notifications</h2>
       {loading ? (
         <p>Loading...</p>
