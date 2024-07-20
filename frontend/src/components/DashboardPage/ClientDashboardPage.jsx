@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchData, updateData } from '../../actions/dataActions';
+import { fetchClientData, updateClientData } from '../../actions/clientDataActions';
 import ClientDashboardHeader from '../DashboardHeader/ClientDashboardHeader';
 import 'event-source-polyfill';
 import './DashboardPage.css';
@@ -9,20 +9,20 @@ import './DashboardPage.css';
 const ClientDashboardPage = () => {
   const { userId } = useParams();
   const dispatch = useDispatch();
-  const data = useSelector((state) => state.data.data);
-  const loading = useSelector((state) => state.data.loading);
-  const error = useSelector((state) => state.data.error);
+  const data = useSelector((state) => state.clientData.data);
+  const loading = useSelector((state) => state.clientData.loading);
+  const error = useSelector((state) => state.clientData.error);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-      dispatch(fetchData({ url: '/sensor-data/fetch-last-sensor-data-each-api', token }));
+      dispatch(fetchClientData({ url: '/client-sensor-data/fetch-last-sensor-data-each-api', token }));
 
-      const eventSource = new EventSource(`${process.env.REACT_APP_API_URL}/sensor-data/stream?token=${token}`);
+      const eventSource = new EventSource(`${process.env.REACT_APP_API_URL}/client-sensor-data/stream?token=${token}`);
 
       eventSource.onmessage = (event) => {
         const newData = JSON.parse(event.data);
-        dispatch(updateData(newData));
+        dispatch(updateClientData(newData));
       };
 
       eventSource.onerror = (error) => {
@@ -36,10 +36,6 @@ const ClientDashboardPage = () => {
     }
   }, [dispatch]);
 
-  useEffect(() => {
-    console.log('Data:', data);
-  }, [data]);
-
   return (
     <div className="dashboard-page-container">
       <ClientDashboardHeader />
@@ -51,18 +47,14 @@ const ClientDashboardPage = () => {
           <div className="rectangles">
             {loading && <p>Loading data...</p>}
             {error && <p className="error">{error}</p>}
-            {Array.isArray(data) ? (
-              data.map((apiData) => (
-                <Link key={apiData.sensor_api} to={`/graph/${userId}/${encodeURIComponent(apiData.sensor_api)}`} className="rectangle-link">
-                  <div className="rectangle">
-                    <p>{apiData.sensor_api.replace(/^.*[\\/]/, '')} Value: {apiData.value}</p>
-                    <p>Updated At: {apiData.timestamp}</p>
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <p>No data available</p>
-            )}
+            {data && data.map((apiData) => (
+              <Link key={apiData.sensor_api} to={`/graph/${userId}/${encodeURIComponent(apiData.sensor_api)}`} className="rectangle-link">
+                <div className="rectangle">
+                  <p>{apiData.sensor_api.replace(/^.*[\\/]/, '')} Value: {apiData.value}</p>
+                  <p>Updated At: {apiData.timestamp}</p>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </div>

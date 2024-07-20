@@ -38,6 +38,10 @@ const sensorRoutes = require('./routes/sensorRoutes');
 const cloudRoutes = require('./routes/cloudRoutes');
 const sensorDataRoutes = require('./routes/sensorDataRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const clientSensorDataRoutes = require('./routes/clientSensorDataRoutes');
+const clientGraphRoutes = require('./routes/clientGraphRoutes');
+const clientReportRoutes = require('./routes/clientReportRoutes');
+const clientNotificationRoutes = require('./routes/clientNotificationRoutes');
 
 // Import the MySQL client
 const db = require('./config/db');
@@ -99,6 +103,10 @@ app.use('/api', sensorRoutes);
 app.use('/api', cloudRoutes);
 app.use('/api/sensor-data', sensorDataRoutes);
 app.use('/api', notificationRoutes);
+app.use('/api/client-sensor-data', clientSensorDataRoutes);
+app.use('/api/client-graph-data', clientGraphRoutes);
+app.use('/api/client-report', clientReportRoutes);
+app.use('/api/client-notifications', clientNotificationRoutes);
 
 // Start the scheduler
 require('./scheduler');
