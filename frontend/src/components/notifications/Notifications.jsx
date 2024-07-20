@@ -42,7 +42,7 @@ const Notifications = () => {
       ) : (
         <>
           <ul className="notifications-list">
-            {notifications && notifications.map((alert, index) => (
+            {Array.isArray(notifications) && notifications.map((alert, index) => (
               <li key={index} className="notification-item">
                 <p>Sensor API: {alert.sensorApi}</p>
                 <p>Value: {alert.value}</p>
