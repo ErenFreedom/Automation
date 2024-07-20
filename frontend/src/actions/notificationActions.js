@@ -1,21 +1,22 @@
+// src/actions/notificationActions.js
 import axios from 'axios';
-import { createAsyncThunk, createAction } from '@reduxjs/toolkit';
 
-export const fetchNotifications = createAsyncThunk(
-  'notifications/fetchNotifications',
-  async (token, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/notifications`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data);
-    }
+export const FETCH_ALERTS_REQUEST = 'FETCH_ALERTS_REQUEST';
+export const FETCH_ALERTS_SUCCESS = 'FETCH_ALERTS_SUCCESS';
+export const FETCH_ALERTS_FAILURE = 'FETCH_ALERTS_FAILURE';
+
+export const fetchAlerts = () => async (dispatch) => {
+  dispatch({ type: FETCH_ALERTS_REQUEST });
+
+  const token = localStorage.getItem('authToken');
+  try {
+    const response = await axios.get(`${process.env.REACT_APP_API_URL}/get-notifications`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    dispatch({ type: FETCH_ALERTS_SUCCESS, payload: response.data });
+  } catch (error) {
+    dispatch({ type: FETCH_ALERTS_FAILURE, payload: error.message });
   }
-);
-
-// Action creator for adding a notification
-export const addNotification = createAction('notifications/addNotification');
+};

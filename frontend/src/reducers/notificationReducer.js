@@ -1,24 +1,27 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { fetchNotifications } from '../actions/notificationActions';
+// src/reducers/notificationReducer.js
+import {
+  FETCH_ALERTS_REQUEST,
+  FETCH_ALERTS_SUCCESS,
+  FETCH_ALERTS_FAILURE,
+} from '../actions/notificationActions';
 
-const notificationSlice = createSlice({
-  name: 'notifications',
-  initialState: {
-    notifications: [],
-    error: null,
-  },
-  reducers: {},
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchNotifications.fulfilled, (state, action) => {
-        state.notifications = action.payload;
-        state.error = null;
-      })
-      .addCase(fetchNotifications.rejected, (state, action) => {
-        state.notifications = [];
-        state.error = action.error.message;
-      });
-  },
-});
+const initialState = {
+  loading: false,
+  alerts: [],
+  error: null,
+};
 
-export default notificationSlice.reducer;
+const notificationReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case FETCH_ALERTS_REQUEST:
+      return { ...state, loading: true };
+    case FETCH_ALERTS_SUCCESS:
+      return { ...state, loading: false, alerts: action.payload };
+    case FETCH_ALERTS_FAILURE:
+      return { ...state, loading: false, error: action.payload };
+    default:
+      return state;
+  }
+};
+
+export default notificationReducer;

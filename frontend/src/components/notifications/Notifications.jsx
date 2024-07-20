@@ -1,47 +1,66 @@
 // src/components/notifications/Notifications.jsx
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchAlerts } from '../../actions/notificationActions';
+import { fetchSensorApis, setThresholds } from '../../actions/sensorActions';
 import './Notifications.css';
 
 const Notifications = () => {
-  const [alerts, setAlerts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { alerts, loading: alertsLoading, error: alertsError } = useSelector((state) => state.notifications);
+  const { sensorApis, loading: sensorsLoading, error: sensorsError } = useSelector((state) => state.sensors);
+  const [thresholds, setThresholdsState] = useState([]);
 
   useEffect(() => {
-    const fetchAlerts = async () => {
-      const token = localStorage.getItem('authToken');
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/alerts`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setAlerts(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching alerts:', error);
-        setLoading(false);
-      }
-    };
+    dispatch(fetchAlerts());
+    dispatch(fetchSensorApis());
+  }, [dispatch]);
 
-    fetchAlerts();
-  }, []);
+  const handleThresholdChange = (index, value) => {
+    const newThresholds = [...thresholds];
+    newThresholds[index].thresholdValue = value;
+    setThresholdsState(newThresholds);
+  };
+
+  const handleSaveThresholds = () => {
+    dispatch(setThresholds({ thresholds }));
+  };
 
   return (
     <div className="notifications-container">
       <h2>Notifications</h2>
-      {loading ? (
+      {alertsLoading || sensorsLoading ? (
         <p>Loading...</p>
+      ) : alertsError ? (
+        <p>Error: {alertsError}</p>
+      ) : sensorsError ? (
+        <p>Error: {sensorsError}</p>
       ) : (
-        <ul className="notifications-list">
-          {alerts.map((alert, index) => (
-            <li key={index} className="notification-item">
-              <p>Table: {alert.table}</p>
-              <p>Value: {alert.value}</p>
-              <p>Timestamp: {new Date(alert.timestamp).toLocaleString()}</p>
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul className="notifications-list">
+            {alerts.map((alert, index) => (
+              <li key={index} className="notification-item">
+                <p>Sensor API: {alert.sensorApi}</p>
+                <p>Value: {alert.value}</p>
+                <p>Timestamp: {new Date(alert.timestamp).toLocaleString()}</p>
+              </li>
+            ))}
+          </ul>
+          <h3>Set Thresholds</h3>
+          <ul className="thresholds-list">
+            {sensorApis.map((sensorApi, index) => (
+              <li key={index} className="threshold-item">
+                <p>Sensor API: {sensorApi}</p>
+                <input
+                  type="number"
+                  value={thresholds[index]?.thresholdValue || ''}
+                  onChange={(e) => handleThresholdChange(index, e.target.value)}
+                />
+              </li>
+            ))}
+          </ul>
+          <button onClick={handleSaveThresholds}>Save Thresholds</button>
+        </>
       )}
     </div>
   );
