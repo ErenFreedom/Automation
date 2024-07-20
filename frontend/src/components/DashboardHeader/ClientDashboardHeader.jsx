@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { FaUserCircle } from 'react-icons/fa';
+import { FaBell, FaUserCircle } from 'react-icons/fa';
 import axios from 'axios';
 import logo from '../../assets/logo.png';
 import './DashboardHeader.css';
@@ -46,6 +46,11 @@ const ClientDashboardHeader = () => {
     }
   };
 
+  const handleNotificationClick = () => {
+    console.log('Bell icon clicked. Navigating to notifications...');
+    navigate('/notifications');
+  };
+
   return (
     <div className="dashboard-header-container">
       <div className="dashboard-logo-container">
@@ -67,6 +72,9 @@ const ClientDashboardHeader = () => {
           <Link to={`/report/${userId}`}>
             <button className="dashboard-button">Generate Report</button>
           </Link>
+        </div>
+        <div className="dashboard-notification-dropdown">
+          <FaBell className="dashboard-icon" onClick={handleNotificationClick} />
         </div>
         <div className="dashboard-profile-dropdown">
           <FaUserCircle className="dashboard-icon" />
