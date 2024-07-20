@@ -52,38 +52,32 @@ const Notifications = () => {
   return (
     <div className="notifications-container">
       <h2>Notifications</h2>
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <>
-          <ul className="notifications-list">
-            {Array.isArray(notifications) && notifications.map((alert, index) => (
-              <li key={index} className="notification-item">
-                <p>Sensor API: {alert.sensorApi}</p>
-                <p>Value: {alert.value}</p>
-                <p>Timestamp: {new Date(alert.timestamp).toLocaleString()}</p>
-              </li>
-            ))}
-          </ul>
-          <button onClick={handleMonitorNow}>Monitor Now</button>
-          <h2>Set Thresholds</h2>
-          <form onSubmit={handleSetThresholds}>
-            {Array.isArray(sensorApis) && sensorApis.map(sensorApi => (
-              <div key={sensorApi} className="threshold-input">
-                <label htmlFor={sensorApi}>{sensorApi}</label>
-                <input 
-                  type="number" 
-                  id={sensorApi} 
-                  name={sensorApi} 
-                  value={thresholds[sensorApi] || ''} 
-                  onChange={(e) => handleThresholdChange(sensorApi, e.target.value)} 
-                />
-              </div>
-            ))}
-            <button type="submit">Set Thresholds</button>
-          </form>
-        </>
-      )}
+      <ul className="notifications-list">
+        {Array.isArray(notifications) && notifications.map((alert, index) => (
+          <li key={index} className="notification-item">
+            <p>Sensor API: {alert.sensorApi}</p>
+            <p>Value: {alert.value}</p>
+            <p>Timestamp: {new Date(alert.timestamp).toLocaleString()}</p>
+          </li>
+        ))}
+      </ul>
+      <button className="monitor-button" onClick={handleMonitorNow}>Monitor Now</button>
+      <h2>Set Thresholds</h2>
+      <form onSubmit={handleSetThresholds}>
+        {Array.isArray(sensorApis) && sensorApis.map(sensorApi => (
+          <div key={sensorApi} className="threshold-input">
+            <label htmlFor={sensorApi}>{sensorApi}</label>
+            <input 
+              type="number" 
+              id={sensorApi} 
+              name={sensorApi} 
+              value={thresholds[sensorApi] || ''} 
+              onChange={(e) => handleThresholdChange(sensorApi, e.target.value)} 
+            />
+          </div>
+        ))}
+        <button className="set-thresholds-button" type="submit">Set Thresholds</button>
+      </form>
     </div>
   );
 };
