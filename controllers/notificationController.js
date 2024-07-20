@@ -115,3 +115,41 @@ exports.getNotifications = async (req, res) => {
         res.status(401).json({ message: 'Unauthorized' });
     }
 };
+
+exports.getAllDataAboveThresholds = async (req, res) => {
+    const token = req.headers.authorization.split(' ')[1];
+
+    try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const { email } = decoded;
+
+        identifyTable(email, (err, table) => {
+            if (err) {
+                console.error('Error identifying table:', err);
+                return res.status(500).send('Error identifying table');
+            }
+
+            const query = `
+                SELECT s.sensor_api, s.value, s.timestamp
+                FROM ${table} s
+                JOIN thresholds t ON s.sensor_api = t.sensor_api AND t.user_email = ?
+                WHERE s.value > t.threshold_value
+                ORDER BY s.timestamp DESC
+            `;
+
+            db.query(query, [email], (err, results) => {
+                if (err) {
+                    console.error('Error fetching data above thresholds:', err);
+                    return res.status(500).send('Error fetching data above thresholds');
+                }
+
+                console.log('Fetched Data Above Thresholds:', results);
+
+                res.status(200).json(results);
+            });
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(401).json({ message: 'Unauthorized' });
+    }
+};
