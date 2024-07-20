@@ -1,35 +1,86 @@
 /* src/components/notifications/Notifications.css */
 .notifications-container {
   padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: 'Arial', sans-serif;
+}
+
+h2 {
+  color: #333;
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
 }
 
 .notifications-list, .thresholds-list {
   list-style: none;
   padding: 0;
+  margin: 20px 0;
 }
 
 .notification-item, .threshold-item {
-  background: #f9f9f9;
-  padding: 10px;
+  background: #fff;
+  padding: 15px;
   margin: 10px 0;
   border: 1px solid #ddd;
-  border-radius: 5px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.threshold-item input {
-  margin-left: 10px;
+.threshold-input {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.threshold-input label {
+  flex: 1;
+  color: #555;
+}
+
+.threshold-input input {
+  flex: 2;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
 button {
+  display: block;
+  width: 100%;
   margin-top: 20px;
-  padding: 10px 20px;
+  padding: 12px 0;
   background-color: #007bff;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
 }
 
 button:hover {
   background-color: #0056b3;
+}
+
+.notification-item p, .threshold-item p {
+  margin: 5px 0;
+  color: #333;
+}
+
+@media (max-width: 600px) {
+  .threshold-input {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .threshold-input label {
+    margin-bottom: 5px;
+  }
+
+  .threshold-input input {
+    width: 100%;
+  }
 }

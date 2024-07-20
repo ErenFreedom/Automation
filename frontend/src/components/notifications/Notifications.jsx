@@ -11,12 +11,22 @@ const Notifications = () => {
   const sensorApis = useSelector((state) => state.sensors.sensorApis);
   const [thresholds, setThresholdsState] = useState({});
   const [loading, setLoading] = useState(true);
+  const [monitoring, setMonitoring] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchAlerts());
     dispatch(fetchSensorApis());
     setLoading(false);
   }, [dispatch]);
+
+  useEffect(() => {
+    if (monitoring) {
+      const interval = setInterval(() => {
+        dispatch(fetchAlerts());
+      }, 60000); // Fetch alerts every 60 seconds
+
+      return () => clearInterval(interval); // Cleanup interval on component unmount
+    }
+  }, [monitoring, dispatch]);
 
   const handleSetThresholds = (e) => {
     e.preventDefault();
@@ -24,7 +34,7 @@ const Notifications = () => {
       sensorApi,
       thresholdValue: thresholds[sensorApi]
     }));
-    dispatch(setThresholds(thresholdArray));
+    dispatch(setThresholds({ thresholds: thresholdArray }));
   };
 
   const handleThresholdChange = (sensorApi, value) => {
@@ -32,6 +42,11 @@ const Notifications = () => {
       ...prevThresholds,
       [sensorApi]: value
     }));
+  };
+
+  const handleMonitorNow = () => {
+    setMonitoring(true);
+    dispatch(fetchAlerts());
   };
 
   return (
@@ -50,6 +65,7 @@ const Notifications = () => {
               </li>
             ))}
           </ul>
+          <button onClick={handleMonitorNow}>Monitor Now</button>
           <h2>Set Thresholds</h2>
           <form onSubmit={handleSetThresholds}>
             {Array.isArray(sensorApis) && sensorApis.map(sensorApi => (
