@@ -1,18 +1,19 @@
 // src/components/notifications/Notifications.jsx
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchNotifications, fetchSensorApis, setThresholds } from '../../actions/sensorActions';
+import { fetchSensorApis, setThresholds } from '../../actions/sensorActions';
+import { fetchAlerts } from '../../actions/notificationActions';
 import './Notifications.css';
 
 const Notifications = () => {
   const dispatch = useDispatch();
-  const notifications = useSelector((state) => state.notifications.notifications);
+  const notifications = useSelector((state) => state.notifications.alerts);
   const sensorApis = useSelector((state) => state.sensors.sensorApis);
   const [thresholds, setThresholdsState] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    dispatch(fetchNotifications());
+    dispatch(fetchAlerts());
     dispatch(fetchSensorApis());
     setLoading(false);
   }, [dispatch]);
@@ -23,7 +24,7 @@ const Notifications = () => {
       sensorApi,
       thresholdValue: thresholds[sensorApi]
     }));
-    dispatch(setThresholds({ thresholds: thresholdArray }));
+    dispatch(setThresholds(thresholdArray));
   };
 
   const handleThresholdChange = (sensorApi, value) => {
