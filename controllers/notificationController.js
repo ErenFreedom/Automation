@@ -41,7 +41,7 @@ exports.checkThresholds = async () => {
 
         let alerts = [];
 
-        thresholds.forEach(threshold => {
+        thresholds.forEach((threshold, index) => {
             identifyTable(threshold.user_email, (err, table) => {
                 if (err) {
                     console.error('Error identifying table:', err);
@@ -73,8 +73,8 @@ exports.checkThresholds = async () => {
                         alerts.push(alert);
                     });
 
-                    // Log or process all alerts in bulk
-                    if (thresholds.indexOf(threshold) === thresholds.length - 1) {
+                    // If this is the last threshold, log or process all alerts in bulk
+                    if (index === thresholds.length - 1) {
                         console.log('All Alerts:', alerts);
                     }
                 });
@@ -98,7 +98,12 @@ exports.getNotifications = async (req, res) => {
 
             const query = `SELECT sensor_api, value, timestamp
                            FROM ${table}
-                           WHERE value > (SELECT threshold_value FROM thresholds WHERE user_email = ? AND sensor_api = ${table}.sensor_api)`;
+                           WHERE value > (
+                               SELECT threshold_value 
+                               FROM thresholds 
+                               WHERE user_email = ? AND sensor_api = ${table}.sensor_api
+                           )
+                           ORDER BY sensor_api, timestamp DESC`;
             db.query(query, [email], (err, results) => {
                 if (err) {
                     console.error('Error fetching notifications:', err);
@@ -107,7 +112,19 @@ exports.getNotifications = async (req, res) => {
 
                 console.log('Fetched Notifications:', results);
 
-                res.status(200).json(results);
+                const groupedNotifications = results.reduce((acc, notif) => {
+                    if (!acc[notif.sensor_api]) {
+                        acc[notif.sensor_api] = [];
+                    }
+                    acc[notif.sensor_api].push({
+                        value: notif.value,
+                        timestamp: notif.timestamp,
+                        message: `Threshold exceeded for ${notif.sensor_api}`
+                    });
+                    return acc;
+                }, {});
+
+                res.status(200).json(groupedNotifications);
             });
         });
     } catch (error) {
