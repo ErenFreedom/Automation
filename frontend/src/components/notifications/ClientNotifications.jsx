@@ -14,18 +14,21 @@ const ClientNotifications = () => {
   const sensorApis = useSelector((state) => state.clientSensors.sensorApis);
   const currentThresholds = useSelector((state) => state.clientSensors.currentThresholds);
   const [thresholds, setThresholdsState] = useState({});
+  const [loading, setLoading] = useState(true);
   const [monitoring, setMonitoring] = useState(false);
 
   useEffect(() => {
-    if (sensorApis.length === 0) {
-      dispatch(fetchClientSensorApis());
-    }
-    if (Object.keys(currentThresholds).length === 0) {
-      dispatch(fetchClientCurrentThresholds());
-    }
+    const initFetch = async () => {
+      await dispatch(fetchClientSensorApis());
+      await dispatch(fetchClientCurrentThresholds());
+      setLoading(false);
+    };
+    initFetch();
 
     const monitoringState = localStorage.getItem('clientMonitoring');
-    setMonitoring(monitoringState === 'true');
+    if (monitoringState === 'true') {
+      setMonitoring(true);
+    }
 
     const savedThresholds = localStorage.getItem('clientThresholds');
     if (savedThresholds) {
@@ -33,16 +36,17 @@ const ClientNotifications = () => {
     } else {
       setThresholdsState(currentThresholds);
     }
-  }, [dispatch, sensorApis.length, currentThresholds]);
+  }, [dispatch, currentThresholds]);
 
   useEffect(() => {
+    let interval;
     if (monitoring) {
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         dispatch(fetchClientAlerts());
-      }, 60000); // Fetch alerts every 60 seconds
-
-      return () => clearInterval(interval); // Cleanup interval on component unmount
+      }, 120000); // Fetch alerts every 2 minutes
     }
+
+    return () => clearInterval(interval); // Cleanup interval on component unmount
   }, [monitoring, dispatch]);
 
   const handleSetThresholds = async (e) => {
@@ -101,20 +105,24 @@ const ClientNotifications = () => {
       </button>
       {monitoring && <FaEye className="monitoring-icon" />}
       <h2>Notifications</h2>
-      {Object.keys(notifications).length === 0 ? (
-        <p>No notifications available.</p>
+      {loading ? (
+        <p>Loading...</p>
       ) : (
         <div className="notifications-list">
-          {Object.keys(notifications).map((sensorApi, index) => (
-            notifications[sensorApi].map((alert, idx) => (
-              <div key={`${index}-${idx}`} className="notification-item">
-                <p><strong>Sensor API:</strong> {sensorApi}</p>
-                <p><strong>Value:</strong> {alert.value}</p>
-                <p><strong>Timestamp:</strong> {new Date(alert.timestamp).toLocaleString()}</p>
-                <p><strong>Message:</strong> {alert.message}</p>
-              </div>
+          {Object.keys(notifications).length === 0 ? (
+            <p>No notifications available.</p>
+          ) : (
+            Object.keys(notifications).map((sensorApi, index) => (
+              notifications[sensorApi].map((alert, idx) => (
+                <div key={`${index}-${idx}`} className="notification-item">
+                  <p><strong>Sensor API:</strong> {sensorApi}</p>
+                  <p><strong>Value:</strong> {alert.value}</p>
+                  <p><strong>Timestamp:</strong> {new Date(alert.timestamp).toLocaleString()}</p>
+                  <p><strong>Message:</strong> {alert.message}</p>
+                </div>
+              ))
             ))
-          ))}
+          )}
         </div>
       )}
     </div>

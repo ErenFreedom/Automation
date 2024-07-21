@@ -17,12 +17,11 @@ const Notifications = () => {
   const [monitoring, setMonitoring] = useState(false);
 
   useEffect(() => {
-    if (sensorApis.length === 0) {
-      dispatch(fetchSensorApis());
-    }
-    if (Object.keys(currentThresholds).length === 0) {
-      dispatch(fetchCurrentThresholds());
-    }
+    const initFetch = async () => {
+      await dispatch(fetchSensorApis());
+      await dispatch(fetchCurrentThresholds());
+    };
+    initFetch();
 
     const monitoringState = localStorage.getItem('monitoring');
     setMonitoring(monitoringState === 'true');
@@ -33,13 +32,14 @@ const Notifications = () => {
     } else {
       setThresholdsState(currentThresholds);
     }
-  }, [dispatch, sensorApis.length, currentThresholds]);
+  }, [dispatch, currentThresholds]);
 
   useEffect(() => {
+    let interval;
     if (monitoring) {
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         dispatch(fetchAlerts());
-      }, 60000); // Fetch alerts every 60 seconds
+      }, 120000); // Fetch alerts every 2 minutes
 
       return () => clearInterval(interval); // Cleanup interval on component unmount
     }
