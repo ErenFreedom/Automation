@@ -22,6 +22,7 @@ export const fetchClientSensorApis = () => async (dispatch) => {
     });
     dispatch({ type: FETCH_CLIENT_SENSOR_APIS_SUCCESS, payload: response.data });
   } catch (error) {
+    console.error('Error fetching client sensor APIs:', error);
     dispatch({ type: FETCH_CLIENT_SENSOR_APIS_FAILURE, payload: error.message });
   }
 };
@@ -38,6 +39,7 @@ export const fetchClientCurrentThresholds = () => async (dispatch) => {
     });
     dispatch({ type: FETCH_CLIENT_CURRENT_THRESHOLDS_SUCCESS, payload: response.data });
   } catch (error) {
+    console.error('Error fetching client current thresholds:', error);
     dispatch({ type: FETCH_CLIENT_CURRENT_THRESHOLDS_FAILURE, payload: error.message });
   }
 };
@@ -55,6 +57,7 @@ export const setClientThresholds = (thresholds) => async (dispatch) => {
     });
     dispatch({ type: SET_CLIENT_THRESHOLDS_SUCCESS, payload: response.data });
   } catch (error) {
+    console.error('Error setting client thresholds:', error);
     dispatch({ type: SET_CLIENT_THRESHOLDS_FAILURE, payload: error.message });
   }
 };
