@@ -14,18 +14,18 @@ const Notifications = () => {
   const sensorApis = useSelector((state) => state.sensors.sensorApis);
   const currentThresholds = useSelector((state) => state.sensors.currentThresholds);
   const [thresholds, setThresholdsState] = useState({});
-  const [loading, setLoading] = useState(true);
   const [monitoring, setMonitoring] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchSensorApis());
-    dispatch(fetchCurrentThresholds());
-    setLoading(false);
+    if (sensorApis.length === 0) {
+      dispatch(fetchSensorApis());
+    }
+    if (Object.keys(currentThresholds).length === 0) {
+      dispatch(fetchCurrentThresholds());
+    }
 
     const monitoringState = localStorage.getItem('monitoring');
-    if (monitoringState === 'true') {
-      setMonitoring(true);
-    }
+    setMonitoring(monitoringState === 'true');
 
     const savedThresholds = localStorage.getItem('thresholds');
     if (savedThresholds) {
@@ -33,7 +33,7 @@ const Notifications = () => {
     } else {
       setThresholdsState(currentThresholds);
     }
-  }, [dispatch, currentThresholds]);
+  }, [dispatch, sensorApis.length, currentThresholds]);
 
   useEffect(() => {
     if (monitoring) {
@@ -101,8 +101,8 @@ const Notifications = () => {
       </button>
       {monitoring && <FaEye className="monitoring-icon" />}
       <h2>Notifications</h2>
-      {loading ? (
-        <p>Loading...</p>
+      {Object.keys(notifications).length === 0 ? (
+        <p>No notifications available.</p>
       ) : (
         <div className="notifications-list">
           {Object.keys(notifications).map((sensorApi, index) => (
