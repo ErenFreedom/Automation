@@ -16,13 +16,17 @@ const Notifications = () => {
   const [thresholds, setThresholdsState] = useState({});
   const [monitoring, setMonitoring] = useState(false);
 
+  // Fetch sensor APIs and current thresholds only once when the component mounts
   useEffect(() => {
-    const initFetch = async () => {
-      await dispatch(fetchSensorApis());
-      await dispatch(fetchCurrentThresholds());
-    };
-    initFetch();
+    if (sensorApis.length === 0) {
+      dispatch(fetchSensorApis());
+    }
+    if (Object.keys(currentThresholds).length === 0) {
+      dispatch(fetchCurrentThresholds());
+    }
+  }, [dispatch, sensorApis.length, currentThresholds]);
 
+  useEffect(() => {
     const monitoringState = localStorage.getItem('monitoring');
     setMonitoring(monitoringState === 'true');
 
@@ -32,8 +36,9 @@ const Notifications = () => {
     } else {
       setThresholdsState(currentThresholds);
     }
-  }, [dispatch, currentThresholds]);
+  }, [currentThresholds]);
 
+  // Set an interval for fetching alerts only when monitoring is active
   useEffect(() => {
     let interval;
     if (monitoring) {
