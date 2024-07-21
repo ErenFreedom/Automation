@@ -13,18 +13,7 @@ const identifyTable = (email, callback) => {
             return callback(null, `staff_sensor_data_${userId}`);
         }
 
-        db.query('SELECT id FROM clients WHERE email = ?', [email], (err, results) => {
-            if (err) {
-                console.error('Error querying clients table:', err);
-                return callback(err);
-            }
-            if (results.length > 0) {
-                const userId = results[0].id;
-                return callback(null, `client_sensor_data_${userId}`);
-            }
-
-            callback(new Error('Email not found in staff or clients table'));
-        });
+        callback(new Error('Email not found in staff table'));
     });
 };
 
@@ -135,7 +124,6 @@ exports.getSensorApis = async (req, res) => {
         res.status(401).json({ message: 'Unauthorized' });
     }
 };
-
 
 exports.getCurrentThresholds = async (req, res) => {
     const token = req.headers.authorization.split(' ')[1];
