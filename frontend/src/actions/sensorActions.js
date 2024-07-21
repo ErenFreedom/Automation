@@ -47,6 +47,7 @@ export const setThresholds = (thresholds) => async (dispatch) => {
 
   const token = localStorage.getItem('authToken');
   try {
+    console.log('Sending payload:', { thresholds }); // Log the payload
     const response = await axios.post(`${process.env.REACT_APP_API_URL}/set-thresholds`, {
       thresholds: thresholds
     }, {
@@ -57,6 +58,7 @@ export const setThresholds = (thresholds) => async (dispatch) => {
     });
     dispatch({ type: SET_THRESHOLDS_SUCCESS, payload: response.data });
   } catch (error) {
+    console.error('Error setting thresholds:', error.response ? error.response.data : error.message); // Log the error response
     dispatch({ type: SET_THRESHOLDS_FAILURE, payload: error.message });
   }
 };
