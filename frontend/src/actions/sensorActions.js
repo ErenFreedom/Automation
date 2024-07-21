@@ -1,3 +1,4 @@
+// src/actions/sensorActions.js
 import axios from 'axios';
 
 export const FETCH_SENSOR_APIS_REQUEST = 'FETCH_SENSOR_APIS_REQUEST';
@@ -47,10 +48,9 @@ export const setThresholds = (thresholds) => async (dispatch) => {
 
   const token = localStorage.getItem('authToken');
   try {
-    console.log('Sending payload:', { thresholds }); // Log the payload
-    const response = await axios.post(`${process.env.REACT_APP_API_URL}/set-thresholds`, {
-      thresholds: thresholds
-    }, {
+    const payload = { thresholds };
+    console.log('Sending payload:', JSON.stringify(payload)); // Log the payload
+    const response = await axios.post(`${process.env.REACT_APP_API_URL}/set-thresholds`, payload, {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',

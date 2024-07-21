@@ -54,11 +54,13 @@ const Notifications = () => {
       sensorApi,
       thresholdValue: thresholds[sensorApi]
     }));
+    console.log('Sending thresholds:', thresholdArray); // Log the thresholds array
     try {
       await dispatch(setThresholds({ thresholds: thresholdArray }));
       localStorage.setItem('thresholds', JSON.stringify(thresholds));
       toast.success('Thresholds set successfully!');
     } catch (error) {
+      console.error('Error setting thresholds:', error.response ? error.response.data : error.message); // Log the error response
       toast.error('Failed to set thresholds.');
     }
   };
