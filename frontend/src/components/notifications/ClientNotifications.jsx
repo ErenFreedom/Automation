@@ -1,5 +1,5 @@
 // src/components/notifications/ClientNotifications.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchClientSensorApis, setClientThresholds, fetchClientCurrentThresholds } from '../../actions/clientSensorActions';
 import { fetchClientAlerts } from '../../actions/clientNotificationActions';
@@ -16,12 +16,14 @@ const ClientNotifications = () => {
   const [thresholds, setThresholdsState] = useState({});
   const [monitoring, setMonitoring] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const initialFetch = useRef(false);
 
   useEffect(() => {
-    if (!loaded) {
+    if (!initialFetch.current) {
       dispatch(fetchClientSensorApis());
       dispatch(fetchClientCurrentThresholds());
       setLoaded(true);
+      initialFetch.current = true;
     }
 
     const monitoringState = localStorage.getItem('clientMonitoring');
@@ -33,7 +35,7 @@ const ClientNotifications = () => {
     } else {
       setThresholdsState(currentThresholds);
     }
-  }, [dispatch, loaded, currentThresholds]);
+  }, [dispatch, currentThresholds]);
 
   useEffect(() => {
     let interval;

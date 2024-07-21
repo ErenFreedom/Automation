@@ -1,5 +1,5 @@
 // src/components/notifications/Notifications.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSensorApis, setThresholds, fetchCurrentThresholds } from '../../actions/sensorActions';
 import { fetchAlerts } from '../../actions/notificationActions';
@@ -16,12 +16,14 @@ const Notifications = () => {
   const [thresholds, setThresholdsState] = useState({});
   const [monitoring, setMonitoring] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const initialFetch = useRef(false);
 
   useEffect(() => {
-    if (!loaded) {
+    if (!initialFetch.current) {
       dispatch(fetchSensorApis());
       dispatch(fetchCurrentThresholds());
       setLoaded(true);
+      initialFetch.current = true;
     }
 
     const monitoringState = localStorage.getItem('monitoring');
@@ -33,7 +35,7 @@ const Notifications = () => {
     } else {
       setThresholdsState(currentThresholds);
     }
-  }, [dispatch, loaded, currentThresholds]);
+  }, [dispatch, currentThresholds]);
 
   useEffect(() => {
     let interval;
