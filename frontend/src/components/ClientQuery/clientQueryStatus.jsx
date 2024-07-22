@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import './ClientQueryStatus.css';
+import './clientQueryStatus.css';
 import logo from '../../assets/logo.png';
 
 const ClientQueryStatus = () => {
