@@ -1,18 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchSensorApis, setThresholds, fetchCurrentThresholds } from '../../actions/sensorActions';
-import { fetchAlerts } from '../../actions/notificationActions';
+import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaEye } from 'react-icons/fa';
+import { jwtDecode } from 'jwt-decode';
 import './Notifications.css';
-import { jwtDecode } from "jwt-decode";
 
 const Notifications = () => {
-  const dispatch = useDispatch();
-  const notifications = useSelector((state) => state.notifications.alerts);
-  const sensorApis = useSelector((state) => state.sensors.sensorApis);
-  const currentThresholds = useSelector((state) => state.sensors.currentThresholds);
+  const [notifications, setNotifications] = useState([]);
+  const [sensorApis, setSensorApis] = useState([]);
+  const [currentThresholds, setCurrentThresholds] = useState({});
   const [thresholds, setThresholdsState] = useState({});
   const [monitoring, setMonitoring] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -22,10 +19,14 @@ const Notifications = () => {
   const decodedToken = jwtDecode(token);
   const isStaff = decodedToken.department ? true : false; // Determine if user is staff
 
+  const getApiUrl = (endpoint) => {
+    return isStaff ? `${process.env.REACT_APP_API_URL}/${endpoint}` : `${process.env.REACT_APP_API_URL}/client-${endpoint}`;
+  };
+
   useEffect(() => {
     if (!initialFetch.current) {
-      dispatch(fetchSensorApis());
-      dispatch(fetchCurrentThresholds());
+      fetchSensorApis();
+      fetchCurrentThresholds();
       setLoaded(true);
       initialFetch.current = true;
     }
@@ -39,18 +40,60 @@ const Notifications = () => {
     } else {
       setThresholdsState(currentThresholds);
     }
-  }, [dispatch, currentThresholds]);
+  }, [currentThresholds]);
 
   useEffect(() => {
     let interval;
     if (monitoring) {
       interval = setInterval(() => {
-        dispatch(fetchAlerts());
+        fetchAlerts();
       }, 120000); // Fetch alerts every 2 minutes
 
       return () => clearInterval(interval); // Cleanup interval on component unmount
     }
-  }, [monitoring, dispatch]);
+  }, [monitoring]);
+
+  const fetchSensorApis = async () => {
+    try {
+      const response = await axios.get(getApiUrl('sensor-apis'), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log('Fetched sensor APIs:', response.data);
+      setSensorApis(response.data);
+    } catch (error) {
+      console.error('Error fetching sensor APIs:', error.message);
+    }
+  };
+
+  const fetchCurrentThresholds = async () => {
+    try {
+      const response = await axios.get(getApiUrl('current-thresholds'), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log('Fetched current thresholds:', response.data);
+      setCurrentThresholds(response.data);
+    } catch (error) {
+      console.error('Error fetching current thresholds:', error.message);
+    }
+  };
+
+  const fetchAlerts = async () => {
+    try {
+      const response = await axios.get(getApiUrl('get-notifications'), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log('Fetched notifications:', response.data);
+      setNotifications(response.data);
+    } catch (error) {
+      console.error('Error fetching alerts:', error.message);
+    }
+  };
 
   const handleSetThresholds = async (e) => {
     e.preventDefault();
@@ -58,13 +101,18 @@ const Notifications = () => {
       sensorApi,
       thresholdValue: thresholds[sensorApi]
     }));
-    console.log('Sending thresholds:', thresholdArray); // Log the thresholds array
+    console.log('Sending thresholds:', thresholdArray);
     try {
-      await dispatch(setThresholds(thresholdArray)); // Action will handle URL
+      await axios.post(getApiUrl('set-thresholds'), { thresholds: thresholdArray }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
       localStorage.setItem('thresholds', JSON.stringify(thresholds));
       toast.success('Thresholds set successfully!');
     } catch (error) {
-      console.error('Error setting thresholds:', error.response ? error.response.data : error.message); // Log the error response
+      console.error('Error setting thresholds:', error.response ? error.response.data : error.message);
       toast.error('Failed to set thresholds.');
     }
   };
@@ -81,7 +129,7 @@ const Notifications = () => {
     const newMonitoringState = !monitoring;
     setMonitoring(newMonitoringState);
     if (newMonitoringState) {
-      dispatch(fetchAlerts());
+      fetchAlerts();
     }
     localStorage.setItem('monitoring', newMonitoringState);
   };
