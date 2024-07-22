@@ -46,7 +46,7 @@
   border-radius: 4px;
 }
 
-.monitor-button, .set-thresholds-button {
+.monitor-button, .set-thresholds-button, .update-thresholds-button {
   display: block;
   width: 100%;
   margin-top: 20px;
@@ -61,7 +61,7 @@
   text-align: center;
 }
 
-.monitor-button:hover, .set-thresholds-button:hover {
+.monitor-button:hover, .set-thresholds-button:hover, .update-thresholds-button:hover {
   background-color: #0056b3;
 }
 
