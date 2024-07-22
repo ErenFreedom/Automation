@@ -48,27 +48,7 @@
   -moz-appearance: textfield; /* Removes the arrows for Firefox */
 }
 
-.update-thresholds-button {
-  display: block;
-  width: 100%;
-  margin-top: 20px;
-  margin-bottom: 20px; /* Add spacing below the button */
-  padding: 12px 0;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-  text-align: center;
-}
-
-.update-thresholds-button:hover {
-  background-color: #0056b3;
-}
-
-.monitor-button, .set-thresholds-button {
+.update-thresholds-button, .monitor-button, .set-thresholds-button, .close-modal-button {
   display: block;
   width: 100%;
   margin-top: 20px;
@@ -83,7 +63,7 @@
   text-align: center;
 }
 
-.monitor-button:hover, .set-thresholds-button:hover {
+.update-thresholds-button:hover, .monitor-button:hover, .set-thresholds-button:hover, .close-modal-button:hover {
   background-color: #0056b3;
 }
 
@@ -104,6 +84,31 @@
 .notification-item p, .threshold-item p {
   margin: 5px 0;
   color: #333;
+}
+
+.Modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 100%;
+}
+
+.Overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
 }
 
 @media (max-width: 600px) {
