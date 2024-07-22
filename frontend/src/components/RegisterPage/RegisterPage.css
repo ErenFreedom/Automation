@@ -31,8 +31,6 @@ body.register-page-body .logo-container {
 
 body.register-page-body .logo {
   height: 80px;
-  margin-top: 30px;
-  margin-bottom: 30px;
 }
 
 body.register-page-body .header-container h1 {
@@ -98,6 +96,11 @@ body.register-page-body .register-form .styled-select {
   appearance: none; /* For removing default arrow in some browsers */
 }
 
+body.register-page-body .register-form .styled-select:focus {
+  outline: none;
+  border-color: #61dafb;
+}
+
 body.register-page-body .register-form button {
   padding: 12px;
   background-color: #61dafb;
@@ -142,6 +145,8 @@ body.register-page-body .slideshow-image {
 }
 
 /* Media queries for smaller screens */
+
+/* For laptops */
 @media (max-width: 1024px) {
   body.register-page-body .register-form-container {
     margin-right: 20px;
@@ -169,6 +174,7 @@ body.register-page-body .slideshow-image {
   }
 }
 
+/* For iPads and tablets */
 @media (max-width: 768px) {
   body.register-page-body .header-container {
     padding: 10px 0;
@@ -207,6 +213,7 @@ body.register-page-body .slideshow-image {
   }
 }
 
+/* For iPhones and Samsung phones */
 @media (max-width: 480px) {
   body.register-page-body .header-container {
     padding: 10px 0;
