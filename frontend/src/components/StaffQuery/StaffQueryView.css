@@ -1,75 +1,100 @@
-.staff-query-view-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #f4f4f4;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .staff-query-view-container h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .query-item {
-    background-color: #fff;
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-  
-  .query-item h3 {
-    margin: 0 0 10px;
-  }
-  
-  .query-item p {
-    margin: 5px 0;
-  }
-  
-  .query-item button {
-    padding: 10px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    font-size: 16px;
-    cursor: pointer;
-  }
-  
-  .query-item button:hover {
-    background-color: #0056b3;
-  }
-  
+.query-view-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: 'Arial', sans-serif;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
 
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+.header-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  height: 80px;
+  margin-bottom: 10px;
+}
+
+.query-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.query-card {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.query-card h2 {
+  margin-top: 0;
+}
+
+.query-card p {
+  margin: 5px 0;
+}
+
+.query-card a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.query-card a:hover {
+  text-decoration: underline;
+}
+
+.status-received {
+  border-left: 5px solid #ffc107;
+}
+
+.status-pending {
+  border-left: 5px solid #17a2b8;
+}
+
+.status-finished {
+  border-left: 5px solid #28a745;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Media queries for smaller screens */
+@media (max-width: 600px) {
+  .query-view-container {
+    padding: 10px;
   }
-  
-  .modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 5px;
-    max-width: 600px;
-    width: 100%;
+
+  .header-container h1 {
+    font-size: 24px;
   }
-  
-  .modal-content h2 {
-    margin-top: 0;
+
+  .query-card {
+    padding: 15px;
   }
-  
-  .modal-content img {
-    max-width: 100%;
-    margin-top: 10px;
+
+  .query-card h2 {
+    font-size: 20px;
   }
-  
+
+  .query-card p {
+    font-size: 14px;
+  }
+}

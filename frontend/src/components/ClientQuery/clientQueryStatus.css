@@ -1,26 +1,86 @@
-.client-query-status-container {
+.query-status-container {
   padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: 'Arial', sans-serif;
   background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.queries-list {
+.header-container {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
-.query-item {
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  background-color: #fff;
+.logo {
+  height: 80px;
+  margin-bottom: 10px;
 }
 
-.query-item h3 {
-  margin: 0;
-  font-size: 18px;
+.query-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.query-item p {
+.query-card {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.query-card h2 {
+  margin-top: 0;
+}
+
+.query-card p {
   margin: 5px 0;
+}
+
+.query-card a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.query-card a:hover {
+  text-decoration: underline;
+}
+
+.status-received {
+  border-left: 5px solid #ffc107;
+}
+
+.status-pending {
+  border-left: 5px solid #17a2b8;
+}
+
+.status-finished {
+  border-left: 5px solid #28a745;
+}
+
+/* Media queries for smaller screens */
+@media (max-width: 600px) {
+  .query-status-container {
+    padding: 10px;
+  }
+
+  .header-container h1 {
+    font-size: 24px;
+  }
+
+  .query-card {
+    padding: 15px;
+  }
+
+  .query-card h2 {
+    font-size: 20px;
+  }
+
+  .query-card p {
+    font-size: 14px;
+  }
 }

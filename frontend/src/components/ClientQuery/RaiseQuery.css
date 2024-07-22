@@ -1,58 +1,67 @@
 .raise-query-container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #f4f4f4;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .raise-query-container h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .raise-query-container form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-  
-  .raise-query-container form div {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .raise-query-container label {
-    margin-bottom: 5px;
-    font-weight: bold;
-  }
-  
-  .raise-query-container input[type="text"],
-  .raise-query-container input[type="file"],
-  .raise-query-container textarea,
-  .raise-query-container select {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 16px;
-  }
-  
-  .raise-query-container textarea {
-    resize: vertical;
-  }
-  
-  .raise-query-container button {
-    padding: 10px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    font-size: 16px;
-    cursor: pointer;
-  }
-  
-  .raise-query-container button:hover {
-    background-color: #0056b3;
-  }
-  
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  font-family: 'Arial', sans-serif;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.header-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  height: 80px;
+  margin-bottom: 10px;
+}
+
+.raise-query-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.raise-query-form label {
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.raise-query-form input,
+.raise-query-form select,
+.raise-query-form textarea {
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  width: calc(100% - 22px);
+}
+
+.raise-query-form button {
+  padding: 12px;
+  background-color: #007bff;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  font-size: 18px;
+  margin-top: 20px;
+}
+
+.raise-query-form button:hover {
+  background-color: #0056b3;
+}
+
+.raise-query-form .error {
+  color: red;
+  margin-top: 10px;
+}
+
+.raise-query-form .message {
+  color: green;
+  margin-top: 10px;
+}
