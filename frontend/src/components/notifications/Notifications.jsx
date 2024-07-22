@@ -6,7 +6,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaEye } from 'react-icons/fa';
 import './Notifications.css';
-import { jwtDecode } from 'jwt-decode';
+import jwtDecode from 'jwt-decode';
 
 const Notifications = () => {
   const dispatch = useDispatch();
@@ -60,8 +60,7 @@ const Notifications = () => {
     }));
     console.log('Sending thresholds:', thresholdArray); // Log the thresholds array
     try {
-      const url = isStaff ? '/set-thresholds' : '/client-set-thresholds'; // Determine URL based on user type
-      await dispatch(setThresholds(thresholdArray, url)); // Pass URL to action
+      await dispatch(setThresholds(thresholdArray)); // Action will handle URL
       localStorage.setItem('thresholds', JSON.stringify(thresholds));
       toast.success('Thresholds set successfully!');
     } catch (error) {
