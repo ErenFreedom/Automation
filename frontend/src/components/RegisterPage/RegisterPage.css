@@ -151,114 +151,114 @@ body.register-page-body .register-form .styled-select:focus {
 /* For laptops */
 @media (max-width: 1024px) {
   body.register-page-body .register-form-container {
-    margin-right: 20px;
+      margin-right: 20px;
   }
 
   body.register-page-body .register-form-container h2 {
-    font-size: 24px;
+      font-size: 24px;
   }
 
   body.register-page-body .register-form input {
-    padding: 10px;
+      padding: 10px;
   }
 
   body.register-page-body .register-form button {
-    padding: 10px;
-    font-size: 16px;
+      padding: 10px;
+      font-size: 16px;
   }
 
   body.register-page-body .header-container {
-    padding: 10px 0;
+      padding: 10px 0;
   }
 
   body.register-page-body .header-container h1 {
-    font-size: 24px;
+      font-size: 24px;
   }
 }
 
 /* For iPads and tablets */
 @media (max-width: 768px) {
   body.register-page-body .header-container {
-    padding: 10px 0;
+      padding: 10px 0;
   }
 
   body.register-page-body .logo {
-    height: 60px;
+      height: 60px;
   }
 
   body.register-page-body .header-container h1 {
-    font-size: 22px;
+      font-size: 22px;
   }
 
   body.register-page-body .register-content {
-    flex-direction: column;
-    align-items: center;
-    padding: 10px;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
   }
 
   body.register-page-body .register-form-container {
-    margin-right: 0;
-    padding: 20px;
+      margin-right: 0;
+      padding: 20px;
   }
 
   body.register-page-body .register-form-container h2 {
-    font-size: 22px;
+      font-size: 22px;
   }
 
   body.register-page-body .register-form input {
-    padding: 8px;
+      padding: 8px;
   }
 
   body.register-page-body .register-form button {
-    padding: 8px;
-    font-size: 14px;
+      padding: 8px;
+      font-size: 14px;
   }
 }
 
 /* For iPhones and Samsung phones */
 @media (max-width: 480px) {
   body.register-page-body .header-container {
-    padding: 10px 0;
+      padding: 10px 0;
   }
 
   body.register-page-body .logo {
-    height: 40px;
+      height: 40px;
   }
 
   body.register-page-body .header-container h1 {
-    font-size: 18px;
+      font-size: 18px;
   }
 
   body.register-page-body .register-content {
-    flex-direction: column;
-    align-items: center;
-    padding: 10px;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
   }
 
   body.register-page-body .register-form-container {
-    margin-right: 0;
-    padding: 15px;
+      margin-right: 0;
+      padding: 15px;
   }
 
   body.register-page-body .register-form-container h2 {
-    font-size: 18px;
+      font-size: 18px;
   }
 
   body.register-page-body .register-form input {
-    padding: 6px;
+      padding: 6px;
   }
 
   body.register-page-body .register-form button {
-    padding: 6px;
-    font-size: 12px;
+      padding: 6px;
+      font-size: 12px;
   }
 
   body.register-page-body .slideshow-container {
-    max-width: 100%;
-    height: auto;
+      max-width: 100%;
+      height: auto;
   }
 
   body.register-page-body .slideshow-image {
-    max-height: 20vh;
+      max-height: 20vh;
   }
 }
