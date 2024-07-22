@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { jwtDecode } from "jwt-decode";
+import jwtDecode from 'jwt-decode';
 
 export const FETCH_SENSOR_APIS_REQUEST = 'FETCH_SENSOR_APIS_REQUEST';
 export const FETCH_SENSOR_APIS_SUCCESS = 'FETCH_SENSOR_APIS_SUCCESS';
@@ -29,6 +29,7 @@ export const fetchSensorApis = () => async (dispatch) => {
         Authorization: `Bearer ${token}`,
       },
     });
+    console.log('Fetched sensor APIs:', response.data); // Log the fetched sensor APIs
     dispatch({ type: FETCH_SENSOR_APIS_SUCCESS, payload: response.data });
   } catch (error) {
     dispatch({ type: FETCH_SENSOR_APIS_FAILURE, payload: error.message });
@@ -45,6 +46,7 @@ export const fetchCurrentThresholds = () => async (dispatch) => {
         Authorization: `Bearer ${token}`,
       },
     });
+    console.log('Fetched current thresholds:', response.data); // Log the fetched current thresholds
     dispatch({ type: FETCH_CURRENT_THRESHOLDS_SUCCESS, payload: response.data });
   } catch (error) {
     dispatch({ type: FETCH_CURRENT_THRESHOLDS_FAILURE, payload: error.message });
