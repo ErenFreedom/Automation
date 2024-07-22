@@ -1,4 +1,3 @@
-// src/components/notifications/Notifications.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSensorApis, setThresholds, fetchCurrentThresholds } from '../../actions/sensorActions';
@@ -7,6 +6,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaEye } from 'react-icons/fa';
 import './Notifications.css';
+import jwtDecode from 'jwt-decode';
 
 const Notifications = () => {
   const dispatch = useDispatch();
@@ -17,6 +17,10 @@ const Notifications = () => {
   const [monitoring, setMonitoring] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const initialFetch = useRef(false);
+
+  const token = localStorage.getItem('authToken');
+  const decodedToken = jwtDecode(token);
+  const isStaff = decodedToken.department ? true : false; // Determine if user is staff
 
   useEffect(() => {
     if (!initialFetch.current) {
@@ -56,7 +60,8 @@ const Notifications = () => {
     }));
     console.log('Sending thresholds:', thresholdArray); // Log the thresholds array
     try {
-      await dispatch(setThresholds(thresholdArray));
+      const url = isStaff ? '/set-thresholds' : '/client-set-thresholds'; // Determine URL based on user type
+      await dispatch(setThresholds(thresholdArray, url)); // Pass URL to action
       localStorage.setItem('thresholds', JSON.stringify(thresholds));
       toast.success('Thresholds set successfully!');
     } catch (error) {

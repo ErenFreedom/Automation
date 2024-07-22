@@ -43,14 +43,13 @@ export const fetchCurrentThresholds = () => async (dispatch) => {
   }
 };
 
-export const setThresholds = (thresholds) => async (dispatch) => {
+export const setThresholds = (thresholds, url) => async (dispatch) => {
   dispatch({ type: SET_THRESHOLDS_REQUEST });
 
   const token = localStorage.getItem('authToken');
   try {
-    const payload = { thresholds };
-    console.log('Sending payload:', JSON.stringify(payload)); // Log the payload
-    const response = await axios.post(`${process.env.REACT_APP_API_URL}/set-thresholds`, payload, {
+    console.log('Sending payload:', JSON.stringify({ thresholds })); // Log the payload
+    const response = await axios.post(`${process.env.REACT_APP_API_URL}${url}`, { thresholds }, {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
