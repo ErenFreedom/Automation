@@ -1,11 +1,13 @@
-// src/components/notifications/ClientNotifications.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaEye } from 'react-icons/fa';
 import { jwtDecode } from 'jwt-decode';
+import ReactModal from 'react-modal';
 import './Notifications.css';
+
+ReactModal.setAppElement('#root');
 
 const ClientNotifications = () => {
   const [notifications, setNotifications] = useState([]);
@@ -14,7 +16,7 @@ const ClientNotifications = () => {
   const [thresholds, setThresholdsState] = useState({});
   const [monitoring, setMonitoring] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [editing, setEditing] = useState(false);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
   const initialFetch = useRef(false);
 
   const token = localStorage.getItem('authToken');
@@ -113,6 +115,7 @@ const ClientNotifications = () => {
       });
       localStorage.setItem('clientThresholds', JSON.stringify(thresholds));
       toast.success('Thresholds set successfully!');
+      closeModal();
     } catch (error) {
       console.error('Error setting thresholds:', error.response ? error.response.data : error.message);
       toast.error('Failed to set thresholds.');
@@ -136,33 +139,58 @@ const ClientNotifications = () => {
     localStorage.setItem('clientMonitoring', newMonitoringState);
   };
 
-  const toggleEditing = () => {
-    setEditing(!editing);
+  const openModal = () => {
+    setModalIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalIsOpen(false);
   };
 
   return (
     <div className="notifications-container">
       <ToastContainer />
       <h2>Set Thresholds</h2>
-      <button onClick={toggleEditing} className="update-thresholds-button">
-        {editing ? 'Stop Editing' : 'Update Threshold Values'}
-      </button>
-      <form onSubmit={handleSetThresholds}>
+      <form>
         {Array.isArray(sensorApis) && sensorApis.map(sensorApi => (
           <div key={sensorApi} className="threshold-input">
             <label htmlFor={sensorApi}>{sensorApi}</label>
             <input
-              type="number"
+              type="text"
               id={sensorApi}
               name={sensorApi}
-              value={thresholds[sensorApi] || currentThresholds[sensorApi] || ''}
-              onChange={(e) => handleThresholdChange(sensorApi, e.target.value)}
-              disabled={!editing}
+              value={currentThresholds[sensorApi] || ''}
+              disabled
             />
           </div>
         ))}
-        <button className="set-thresholds-button" type="submit" disabled={!editing}>Set Thresholds</button>
       </form>
+      <button onClick={openModal} className="update-thresholds-button">Update Threshold Values</button>
+      <ReactModal
+        isOpen={modalIsOpen}
+        onRequestClose={closeModal}
+        contentLabel="Update Threshold Values"
+        className="Modal"
+        overlayClassName="Overlay"
+      >
+        <h2>Update Threshold Values</h2>
+        <form onSubmit={handleSetThresholds}>
+          {Array.isArray(sensorApis) && sensorApis.map(sensorApi => (
+            <div key={sensorApi} className="threshold-input">
+              <label htmlFor={sensorApi}>{sensorApi}</label>
+              <input
+                type="number"
+                id={sensorApi}
+                name={sensorApi}
+                value={thresholds[sensorApi] || ''}
+                onChange={(e) => handleThresholdChange(sensorApi, e.target.value)}
+              />
+            </div>
+          ))}
+          <button className="set-thresholds-button" type="submit">Apply Changes</button>
+        </form>
+        <button onClick={closeModal} className="close-modal-button">Close</button>
+      </ReactModal>
       <button className="monitor-button" onClick={handleMonitorToggle}>
         {monitoring ? 'Stop Monitoring' : 'Monitor Now'}
       </button>
