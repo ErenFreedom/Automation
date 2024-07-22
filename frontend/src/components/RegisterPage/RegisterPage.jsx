@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import 'react-phone-input-2/lib/style.css';
-import PhoneInput from 'react-phone-input-2';
+import countryData from './countryData'; // Importing the country data for country codes
 import './RegisterPage.css';
 import logo from '../../assets/logo.png';
 import firstImage from '../../assets/image1.jpg';
@@ -20,7 +19,6 @@ const RegisterPage = () => {
     gender: '',
     age: '',
     phoneNumber: '',
-    department: '',
     country: ''
   });
   const [error, setError] = useState('');
@@ -45,12 +43,19 @@ const RegisterPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handlePhoneChange = (value, country) => {
+  const handleCountryChange = (e) => {
+    const country = e.target.value;
+    const countryInfo = countryData.find(c => c.name.toLowerCase() === country.toLowerCase());
+    const countryCode = countryInfo ? `+${countryInfo.dial_code}` : '';
     setFormData({
       ...formData,
-      phoneNumber: value,
-      country: country.name
+      country: country,
+      phoneNumber: countryCode
     });
+  };
+
+  const handlePhoneChange = (e) => {
+    setFormData({ ...formData, phoneNumber: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -112,17 +117,12 @@ const RegisterPage = () => {
               <input type="number" name="age" value={formData.age} onChange={handleChange} placeholder="Enter your age" required />
             </label>
             <label>
+              Country
+              <input type="text" name="country" value={formData.country} onChange={handleCountryChange} placeholder="Enter your country" required />
+            </label>
+            <label>
               Phone Number
-              <PhoneInput
-                country={'us'}
-                value={formData.phoneNumber}
-                onChange={handlePhoneChange}
-                inputProps={{
-                  name: 'phoneNumber',
-                  required: true,
-                  placeholder: 'Enter your phone number'
-                }}
-              />
+              <input type="text" name="phoneNumber" value={formData.phoneNumber} onChange={handlePhoneChange} placeholder="Enter your phone number" required />
             </label>
             <label>
               Department
