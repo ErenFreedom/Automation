@@ -115,6 +115,7 @@ const Notifications = () => {
       });
       localStorage.setItem('thresholds', JSON.stringify(thresholds));
       toast.success('Thresholds set successfully!');
+      closeModal();
     } catch (error) {
       console.error('Error setting thresholds:', error.response ? error.response.data : error.message);
       toast.error('Failed to set thresholds.');
@@ -150,6 +151,20 @@ const Notifications = () => {
     <div className="notifications-container">
       <ToastContainer />
       <h2>Set Thresholds</h2>
+      <form>
+        {Array.isArray(sensorApis) && sensorApis.map(sensorApi => (
+          <div key={sensorApi} className="threshold-input">
+            <label htmlFor={sensorApi}>{sensorApi}</label>
+            <input
+              type="text"
+              id={sensorApi}
+              name={sensorApi}
+              value={currentThresholds[sensorApi] || ''}
+              disabled
+            />
+          </div>
+        ))}
+      </form>
       <button onClick={openModal} className="update-thresholds-button">Update Threshold Values</button>
       <ReactModal
         isOpen={modalIsOpen}
@@ -167,7 +182,7 @@ const Notifications = () => {
                 type="number"
                 id={sensorApi}
                 name={sensorApi}
-                value={thresholds[sensorApi] || currentThresholds[sensorApi] || ''}
+                value={thresholds[sensorApi] || ''}
                 onChange={(e) => handleThresholdChange(sensorApi, e.target.value)}
               />
             </div>
