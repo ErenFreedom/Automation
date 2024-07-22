@@ -56,7 +56,7 @@ const Notifications = () => {
     }));
     console.log('Sending thresholds:', thresholdArray); // Log the thresholds array
     try {
-      await dispatch(setThresholds({ thresholds: thresholdArray }));
+      await dispatch(setThresholds(thresholdArray));
       localStorage.setItem('thresholds', JSON.stringify(thresholds));
       toast.success('Thresholds set successfully!');
     } catch (error) {
