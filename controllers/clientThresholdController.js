@@ -60,15 +60,15 @@ exports.setThresholds = async (req, res) => {
                     return res.status(400).send('No valid sensor APIs found in thresholds');
                 }
 
-                // Delete existing thresholds for this user
-                db.query('DELETE FROM thresholds WHERE user_email = ?', [email], (err) => {
+                // Delete existing thresholds for this user in client_thresholds table
+                db.query('DELETE FROM client_thresholds WHERE user_email = ?', [email], (err) => {
                     if (err) {
                         console.error('Error deleting existing thresholds:', err);
                         return res.status(500).send('Error deleting existing thresholds');
                     }
 
-                    // Insert new thresholds
-                    let query = 'INSERT INTO thresholds (user_email, sensor_api, threshold_value) VALUES ';
+                    // Insert new thresholds into client_thresholds table
+                    let query = 'INSERT INTO client_thresholds (user_email, sensor_api, threshold_value) VALUES ';
                     const values = [];
 
                     validThresholds.forEach((threshold, index) => {
@@ -138,7 +138,7 @@ exports.getCurrentThresholds = async (req, res) => {
                 return res.status(500).send('Error identifying table');
             }
 
-            const query = `SELECT sensor_api, threshold_value FROM thresholds WHERE user_email = ?`;
+            const query = `SELECT sensor_api, threshold_value FROM client_thresholds WHERE user_email = ?`;
             db.query(query, [email], (err, results) => {
                 if (err) {
                     console.error('Error fetching current thresholds:', err);
