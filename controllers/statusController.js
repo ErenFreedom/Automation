@@ -1,6 +1,6 @@
 const db = require('../config/db');
+const moment = require('moment');
 const AWS = require('aws-sdk');
-require('dotenv').config();
 
 AWS.config.update({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -8,200 +8,103 @@ AWS.config.update({
     region: process.env.AWS_REGION,
 });
 
-const pinpoint = new AWS.Pinpoint({ apiVersion: '2016-12-01' });
+const sns = new AWS.SNS({ apiVersion: '2010-03-31' });
 
-exports.viewQuery = (req, res) => {
+// Function to update query status to 'Received'
+exports.receiveQuery = (req, res) => {
     const { queryId, staffId } = req.body;
 
-    const updateStatusQuery = `
-        UPDATE query_status 
-        SET status = 'Pending', viewed_by = ?, viewed_at = NOW() 
-        WHERE query_id = ? AND status = 'Received'`;
-
+    const updateStatusQuery = `UPDATE query_status SET status = 'Received', viewed_by = ?, viewed_at = NOW() WHERE query_id = ?`;
     db.query(updateStatusQuery, [staffId, queryId], (err, results) => {
         if (err) {
-            console.error('Error updating query status:', err);
-            return res.status(500).send('Error viewing query');
+            console.error('Error updating query status to Received:', err);
+            return res.status(500).send('Error updating query status to Received');
         }
 
-        // Fetch client details to send SMS
-        const getClientQuery = 'SELECT clientEmail FROM queries WHERE id = ?';
-        db.query(getClientQuery, [queryId], (err, clientResults) => {
-            if (err) {
-                console.error('Error fetching client details:', err);
-                return res.status(500).send('Error fetching client details');
-            }
-
-            const clientEmail = clientResults[0].clientEmail;
-            const getClientPhoneQuery = 'SELECT phoneNumber FROM clients WHERE email = ?';
-            db.query(getClientPhoneQuery, [clientEmail], (err, phoneResults) => {
-                if (err) {
-                    console.error('Error fetching client phone number:', err);
-                    return res.status(500).send('Error fetching client phone number');
-                }
-
-                const clientPhone = phoneResults[0].phoneNumber;
-                const params = {
-                    ApplicationId: process.env.PINPOINT_APPLICATION_ID,
-                    MessageRequest: {
-                        Addresses: {
-                            [clientPhone]: {
-                                ChannelType: 'SMS'
-                            }
-                        },
-                        MessageConfiguration: {
-                            SMSMessage: {
-                                Body: `Your query with ID ${queryId} has been acknowledged. Please be patient while we work on it.`,
-                                MessageType: 'TRANSACTIONAL'
-                            }
-                        }
-                    }
-                };
-
-                pinpoint.sendMessages(params, (err, data) => {
-                    if (err) {
-                        console.error('Error sending SMS:', err);
-                    } else {
-                        console.log('SMS sent:', data);
-                    }
-                });
-
-                res.status(200).send('Query viewed successfully');
-            });
-        });
+        res.status(200).send('Query status updated to Received');
     });
 };
 
+// Function to update query status to 'Closed'
 exports.closeQuery = (req, res) => {
     const { queryId, staffId } = req.body;
 
-    const updateStatusQuery = `
-        UPDATE query_status 
-        SET status = 'Finished', closed_by = ?, closed_at = NOW(), 
-            time_to_close = TIMESTAMPDIFF(SECOND, viewed_at, NOW())
-        WHERE query_id = ? AND status = 'Pending'`;
-
-    db.query(updateStatusQuery, [staffId, queryId], (err, results) => {
-        if (err) {
-            console.error('Error updating query status:', err);
-            return res.status(500).send('Error closing query');
+    // First, fetch the viewed_at time and client email
+    const getQueryDetailsQuery = `SELECT qs.viewed_at, q.clientEmail FROM query_status qs JOIN queries q ON qs.query_id = q.id WHERE qs.query_id = ?`;
+    db.query(getQueryDetailsQuery, [queryId], (err, results) => {
+        if (err || results.length === 0) {
+            console.error('Error fetching query details:', err);
+            return res.status(500).send('Error fetching query details');
         }
 
-        // Fetch client details to send SMS
-        const getClientQuery = 'SELECT clientEmail FROM queries WHERE id = ?';
-        db.query(getClientQuery, [queryId], (err, clientResults) => {
+        const viewedAt = results[0].viewed_at;
+        const clientEmail = results[0].clientEmail;
+        const closedAt = moment().format('YYYY-MM-DD HH:mm:ss');
+        const duration = moment(closedAt).diff(moment(viewedAt), 'minutes');
+
+        // Update query status to 'Closed'
+        const updateStatusQuery = `UPDATE query_status SET status = 'Closed', closed_by = ?, closed_at = ?, time_to_close = ? WHERE query_id = ?`;
+        db.query(updateStatusQuery, [staffId, closedAt, duration, queryId], (err, results) => {
             if (err) {
-                console.error('Error fetching client details:', err);
-                return res.status(500).send('Error fetching client details');
+                console.error('Error updating query status to Closed:', err);
+                return res.status(500).send('Error updating query status to Closed');
             }
 
-            const clientEmail = clientResults[0].clientEmail;
-            const getClientPhoneQuery = 'SELECT phoneNumber FROM clients WHERE email = ?';
-            db.query(getClientPhoneQuery, [clientEmail], (err, phoneResults) => {
+            // Insert into calls table
+            const insertCallQuery = 'INSERT INTO calls (query_id, staff_id, duration) VALUES (?, ?, ?)';
+            db.query(insertCallQuery, [queryId, staffId, duration], (err) => {
                 if (err) {
-                    console.error('Error fetching client phone number:', err);
-                    return res.status(500).send('Error fetching client phone number');
+                    console.error('Error inserting into calls table:', err);
+                    return res.status(500).send('Error inserting into calls table');
                 }
 
-                const clientPhone = phoneResults[0].phoneNumber;
-                const params = {
-                    ApplicationId: process.env.PINPOINT_APPLICATION_ID,
-                    MessageRequest: {
-                        Addresses: {
-                            [clientPhone]: {
-                                ChannelType: 'SMS'
-                            }
-                        },
-                        MessageConfiguration: {
-                            SMSMessage: {
-                                Body: `Your query with ID ${queryId} has been resolved. Thank you for bearing with us.`,
-                                MessageType: 'TRANSACTIONAL'
-                            }
-                        }
-                    }
-                };
-
-                pinpoint.sendMessages(params, (err, data) => {
+                // Fetch full query details to send to the client
+                const getFullQueryDetailsQuery = `SELECT q.*, qs.status, qs.viewed_by, qs.closed_by, qs.viewed_at, qs.closed_at, qs.time_to_close
+                                                  FROM queries q
+                                                  JOIN query_status qs ON q.id = qs.query_id
+                                                  WHERE q.id = ?`;
+                db.query(getFullQueryDetailsQuery, [queryId], (err, queryDetails) => {
                     if (err) {
-                        console.error('Error sending SMS:', err);
-                    } else {
-                        console.log('SMS sent:', data);
+                        console.error('Error fetching full query details:', err);
+                        return res.status(500).send('Error fetching full query details');
                     }
-                });
 
-                res.status(200).send('Query closed successfully');
+                    const queryDetail = queryDetails[0];
+
+                    // Send SMS to the client
+                    const params = {
+                        Message: `Your query has been resolved.\n\nQuery Details:\nSubject: ${queryDetail.subject}\nMessage: ${queryDetail.message}\nStatus: ${queryDetail.status}\nClosed By: ${queryDetail.closed_by}\nViewed At: ${queryDetail.viewed_at}\nClosed At: ${queryDetail.closed_at}\nTime to Close: ${queryDetail.time_to_close} minutes`,
+                        PhoneNumber: queryDetail.clientEmail,
+                    };
+
+                    sns.publish(params, (err, data) => {
+                        if (err) {
+                            console.error('Error sending SMS:', err);
+                            return res.status(500).send('Error sending SMS');
+                        }
+
+                        console.log('SMS sent:', data);
+                        res.status(200).send('Query status updated to Closed and client notified');
+                    });
+                });
             });
         });
     });
 };
 
-// Fetch queries for a specific department
-exports.getQueries = (req, res) => {
-    const { department } = req.params;
-
-    if (!department) {
-        return res.status(400).send('Department is required');
-    }
-
-    const selectQueries = `
-        SELECT q.*, qs.status, qs.viewed_by, qs.closed_by, qs.viewed_at, qs.closed_at, qs.time_to_close 
-        FROM queries q 
-        JOIN query_status qs ON q.id = qs.query_id
-        WHERE q.department = ? 
-        ORDER BY q.created_at DESC`;
-
-    db.query(selectQueries, [department], (err, results) => {
-        if (err) {
-            console.error('Error fetching queries:', err);
-            return res.status(500).send('Error fetching queries');
-        }
-        res.status(200).json(results);
-    });
-};
-
-// Fetch query details for a specific query
-exports.getQueryDetails = (req, res) => {
-    const { queryId } = req.params;
-
-    if (!queryId) {
-        return res.status(400).send('Query ID is required');
-    }
-
-    const selectQueryDetails = `
-        SELECT q.*, qs.status, qs.viewed_by, qs.closed_by, qs.viewed_at, qs.closed_at, qs.time_to_close 
-        FROM queries q 
-        JOIN query_status qs ON q.id = qs.query_id
-        WHERE q.id = ?`;
-
-    db.query(selectQueryDetails, [queryId], (err, results) => {
-        if (err) {
-            console.error('Error fetching query details:', err);
-            return res.status(500).send('Error fetching query details');
-        }
-        res.status(200).json(results[0]);
-    });
-};
-
-// Fetch query status for a specific client
-exports.getClientQueryStatus = (req, res) => {
+// Function to get query status for a client
+exports.getClientQueries = (req, res) => {
     const { clientEmail } = req.params;
 
-    if (!clientEmail) {
-        return res.status(400).send('Client email is required');
-    }
-
-    const selectClientQueries = `
-        SELECT q.*, qs.status, qs.viewed_by, qs.closed_by, qs.viewed_at, qs.closed_at, qs.time_to_close 
-        FROM queries q 
-        JOIN query_status qs ON q.id = qs.query_id
-        WHERE q.clientEmail = ? 
-        ORDER BY q.created_at DESC`;
-
-    db.query(selectClientQueries, [clientEmail], (err, results) => {
+    const getQueriesQuery = `SELECT q.*, qs.status FROM queries q
+                             JOIN query_status qs ON q.id = qs.query_id
+                             WHERE q.clientEmail = ?`;
+    db.query(getQueriesQuery, [clientEmail], (err, results) => {
         if (err) {
             console.error('Error fetching client queries:', err);
             return res.status(500).send('Error fetching client queries');
         }
+
         res.status(200).json(results);
     });
 };
