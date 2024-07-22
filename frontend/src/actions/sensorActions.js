@@ -1,5 +1,5 @@
 import axios from 'axios';
-import jwtDecode from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
 
 export const FETCH_SENSOR_APIS_REQUEST = 'FETCH_SENSOR_APIS_REQUEST';
 export const FETCH_SENSOR_APIS_SUCCESS = 'FETCH_SENSOR_APIS_SUCCESS';
