@@ -68,13 +68,14 @@ const RaiseQuery = () => {
         </label>
         <label>
           Department
-          <select name="department" value={formData.department} onChange={handleChange} required>
-            <option value="">Select your department</option>
-            <option value="temperature">Temperature</option>
-            <option value="pressure">Pressure</option>
-            <option value="humidity">Humidity</option>
-            <option value="rh">RH</option>
-          </select>
+          <input 
+            type="text" 
+            name="department" 
+            value={formData.department} 
+            onChange={handleChange} 
+            placeholder="Enter your department (Temperature, Pressure, Humidity, RH - Case Sensitive)" 
+            required 
+          />
         </label>
         <label>
           Subject

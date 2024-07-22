@@ -1,28 +1,32 @@
 .raise-query-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 20px;
-  max-width: 600px;
-  margin: 0 auto;
-  font-family: 'Arial', sans-serif;
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
 }
 
 .header-container {
   display: flex;
-  flex-direction: column;
   align-items: center;
   margin-bottom: 20px;
 }
 
 .logo {
   height: 80px;
-  margin-bottom: 10px;
+  margin-right: 20px;
+}
+
+h1 {
+  font-size: 28px;
+  color: #282c34;
 }
 
 .raise-query-form {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 600px;
 }
 
 .raise-query-form label {
@@ -33,35 +37,39 @@
 .raise-query-form input,
 .raise-query-form select,
 .raise-query-form textarea {
-  padding: 10px;
+  padding: 12px;
   margin-top: 5px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 16px;
-  width: calc(100% - 22px);
+  width: calc(100% - 24px);
+}
+
+.raise-query-form input[type="file"] {
+  padding: 5px;
 }
 
 .raise-query-form button {
   padding: 12px;
-  background-color: #007bff;
+  background-color: #61dafb;
   border: none;
   border-radius: 5px;
   color: white;
   cursor: pointer;
   font-size: 18px;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 .raise-query-form button:hover {
-  background-color: #0056b3;
+  background-color: #21a1f1;
 }
 
-.raise-query-form .error {
+.error {
   color: red;
   margin-top: 10px;
 }
 
-.raise-query-form .message {
+.message {
   color: green;
   margin-top: 10px;
 }
