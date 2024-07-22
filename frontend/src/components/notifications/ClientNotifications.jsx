@@ -21,9 +21,6 @@ const ClientNotifications = () => {
   const isClient = !decodedToken.department; // Determine if user is client
 
   const getApiUrl = (endpoint) => {
-    if (endpoint === 'get-notifications') {
-      return isClient ? `${process.env.REACT_APP_API_URL}/client-notifications/${endpoint}` : `${process.env.REACT_APP_API_URL}/${endpoint}`;
-    }
     return isClient ? `${process.env.REACT_APP_API_URL}/client-${endpoint}` : `${process.env.REACT_APP_API_URL}/${endpoint}`;
   };
 

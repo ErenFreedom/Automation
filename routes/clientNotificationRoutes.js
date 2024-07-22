@@ -8,7 +8,7 @@ const clientThresholdController = require('../controllers/clientThresholdControl
 router.post('/client-set-thresholds', authenticateToken, clientThresholdController.setThresholds);
 
 // Route to get notifications
-router.get('/client-notifications/get-notifications', authenticateToken, clientNotificationController.getNotifications);
+router.get('/client-get-notifications', authenticateToken, clientNotificationController.getNotifications);
 
 // Route to get sensor APIs
 router.get('/client-sensor-apis', authenticateToken, clientThresholdController.getSensorApis);
