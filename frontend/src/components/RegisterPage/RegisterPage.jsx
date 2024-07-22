@@ -19,7 +19,8 @@ const RegisterPage = () => {
     gender: '',
     age: '',
     phoneNumber: '',
-    country: ''
+    country: '',
+    department: ''
   });
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -126,13 +127,7 @@ const RegisterPage = () => {
             </label>
             <label>
               Department
-              <select name="department" value={formData.department} onChange={handleChange} required className="styled-select">
-                <option value="">Select your department</option>
-                <option value="temperature">Temperature</option>
-                <option value="pressure">Pressure</option>
-                <option value="humidity">Humidity</option>
-                <option value="rh">RH</option>
-              </select>
+              <input type="text" name="department" value={formData.department} onChange={handleChange} placeholder="Enter your department" required />
             </label>
             <button type="submit">Create</button>
           </form>

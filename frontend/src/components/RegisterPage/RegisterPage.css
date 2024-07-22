@@ -87,6 +87,17 @@ body.register-page-body .register-form input {
   width: calc(100% - 24px);
 }
 
+body.register-page-body .register-form .styled-select {
+  padding: 12px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  width: calc(100% - 24px);
+  background-color: white;
+  appearance: none; /* For removing default arrow in some browsers */
+}
+
 body.register-page-body .register-form button {
   padding: 12px;
   background-color: #61dafb;
@@ -130,25 +141,7 @@ body.register-page-body .slideshow-image {
   border-radius: 10px;
 }
 
-body.register-page-body .register-form .styled-select {
-  padding: 12px;
-  margin-top: 5px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
-  width: calc(100% - 24px);
-  background-color: white;
-  appearance: none; /* For removing default arrow in some browsers */
-}
-
-body.register-page-body .register-form .styled-select:focus {
-  outline: none;
-  border-color: #61dafb;
-}
-
 /* Media queries for smaller screens */
-
-/* For laptops */
 @media (max-width: 1024px) {
   body.register-page-body .register-form-container {
     margin-right: 20px;
@@ -176,7 +169,6 @@ body.register-page-body .register-form .styled-select:focus {
   }
 }
 
-/* For iPads and tablets */
 @media (max-width: 768px) {
   body.register-page-body .header-container {
     padding: 10px 0;
@@ -215,7 +207,6 @@ body.register-page-body .register-form .styled-select:focus {
   }
 }
 
-/* For iPhones and Samsung phones */
 @media (max-width: 480px) {
   body.register-page-body .header-container {
     padding: 10px 0;
