@@ -14,7 +14,7 @@ exports.registerStaff = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, username, password, name, gender, age, phoneNumber, department } = req.body;
+    const { email, username, password, name, gender, age, phoneNumber, department, country } = req.body;
     const decryptedPassword = decryptData(password);
 
     const checkQuery = 'SELECT * FROM staff WHERE email = ? OR username = ?';
@@ -31,8 +31,8 @@ exports.registerStaff = async (req, res) => {
         const otp = generateOTP();
         const expiresAt = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes from now
 
-        const insertOtpQuery = 'INSERT INTO otps (email, otp, expires_at, password, username, name, gender, age, phoneNumber, department) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-        db.query(insertOtpQuery, [email, otp, expiresAt, decryptedPassword, username, name, gender, age, phoneNumber, department], async (err) => {
+        const insertOtpQuery = 'INSERT INTO otps (email, otp, expires_at, password, username, name, gender, age, phoneNumber, department, country) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        db.query(insertOtpQuery, [email, otp, expiresAt, decryptedPassword, username, name, gender, age, phoneNumber, department, country], async (err) => {
             if (err) {
                 console.error('Error storing OTP:', err);
                 return res.status(500).send('Error storing OTP');
@@ -64,8 +64,8 @@ exports.verifyStaffRegistration = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(otpData.password, 10);
-        const query = 'INSERT INTO staff (email, username, password, name, gender, age, phoneNumber, department) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-        db.query(query, [email, otpData.username, hashedPassword, otpData.name, otpData.gender, otpData.age, otpData.phoneNumber, otpData.department], (err) => {
+        const query = 'INSERT INTO staff (email, username, password, name, gender, age, phoneNumber, department, country) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        db.query(query, [email, otpData.username, hashedPassword, otpData.name, otpData.gender, otpData.age, otpData.phoneNumber, otpData.department, otpData.country], (err) => {
             if (err) {
                 console.error('Error registering staff member:', err);
                 return res.status(500).send('Error registering staff member');
