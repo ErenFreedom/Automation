@@ -18,7 +18,7 @@ const identifyTable = (email, callback) => {
 };
 
 exports.checkThresholds = async () => {
-    const thresholdQuery = `SELECT t.user_email, t.sensor_api, t.threshold_value FROM thresholds t`;
+    const thresholdQuery = `SELECT t.user_email, t.sensor_api, t.threshold_value FROM client_thresholds t`;
 
     db.query(thresholdQuery, (err, thresholds) => {
         if (err) {
@@ -89,7 +89,7 @@ exports.getNotifications = async (req, res) => {
                            FROM ${table}
                            WHERE value > (
                                SELECT threshold_value 
-                               FROM thresholds 
+                               FROM client_thresholds 
                                WHERE user_email = ? AND sensor_api = ${table}.sensor_api
                            )
                            ORDER BY sensor_api, timestamp DESC`;
