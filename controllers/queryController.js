@@ -39,59 +39,62 @@ exports.raiseQuery = async (req, res) => {
     const { clientEmail, department, subject, message } = req.body;
     const imageUrl = req.file ? req.file.path : null;
 
-    // Insert query into database
-    const insertQuery = 'INSERT INTO queries (clientEmail, department, subject, message, imageUrl) VALUES (?, ?, ?, ?, ?)';
-    db.query(insertQuery, [clientEmail, department, subject, message, imageUrl], async (err, results) => {
-        if (err) {
-            console.error('Error inserting query:', err);
-            return res.status(500).send('Error raising query');
+    // Fetch client details
+    const getClientDetailsQuery = 'SELECT id, name, email, phoneNumber FROM clients WHERE email = ?';
+    db.query(getClientDetailsQuery, [clientEmail], async (err, clientResults) => {
+        if (err || clientResults.length === 0) {
+            console.error('Error fetching client details:', err);
+            return res.status(500).send('Error fetching client details');
         }
 
-        const queryId = results.insertId;
+        const clientDetails = clientResults[0];
 
-        // Insert initial status into query_status table
-        const insertStatusQuery = 'INSERT INTO query_status (query_id, status) VALUES (?, ?)';
-        db.query(insertStatusQuery, [queryId, 'Received'], (err) => {
+        // Insert query into database
+        const insertQuery = 'INSERT INTO queries (clientEmail, department, subject, message, imageUrl) VALUES (?, ?, ?, ?, ?)';
+        db.query(insertQuery, [clientEmail, department, subject, message, imageUrl], async (err, results) => {
             if (err) {
-                console.error('Error inserting query status:', err);
+                console.error('Error inserting query:', err);
                 return res.status(500).send('Error raising query');
             }
-        });
 
-        // Fetch email addresses of department staff
-        const getEmailsQuery = 'SELECT email FROM staff WHERE department = ?';
-        db.query(getEmailsQuery, [department], (err, staffResults) => {
-            if (err) {
-                console.error('Error fetching staff emails:', err);
-                return res.status(500).send('Error fetching staff emails');
-            }
+            const queryId = results.insertId;
 
-            const emailAddresses = staffResults.map(staff => staff.email);
-            const mailOptions = {
-                from: process.env.EMAIL_USER,
-                to: emailAddresses, // Send to all fetched email addresses
-                subject: `New Query: ${subject}`,
-                text: message,
-                attachments: imageUrl ? [{ path: imageUrl }] : [],
-            };
-
-            transporter.sendMail(mailOptions, (err, info) => {
+            // Insert initial status into query_status table
+            const insertStatusQuery = 'INSERT INTO query_status (query_id, status) VALUES (?, ?)';
+            db.query(insertStatusQuery, [queryId, 'Received'], (err) => {
                 if (err) {
-                    console.error('Error sending email:', err);
-                    return res.status(500).send('Error sending email');
+                    console.error('Error inserting query status:', err);
+                    return res.status(500).send('Error raising query');
                 }
-
-                console.log('Email sent:', info.response);
             });
 
-            // Send SMS to department staff
-            const getStaffQuery = 'SELECT phoneNumber FROM staff WHERE department = ?';
-            db.query(getStaffQuery, [department], (err, staffResults) => {
+            // Fetch email addresses of department staff
+            const getEmailsQuery = 'SELECT email, phoneNumber FROM staff WHERE department = ?';
+            db.query(getEmailsQuery, [department], (err, staffResults) => {
                 if (err) {
-                    console.error('Error fetching staff phone numbers:', err);
-                    return res.status(500).send('Error fetching staff phone numbers');
+                    console.error('Error fetching staff emails:', err);
+                    return res.status(500).send('Error fetching staff emails');
                 }
 
+                const emailAddresses = staffResults.map(staff => staff.email);
+                const mailOptions = {
+                    from: process.env.EMAIL_USER,
+                    to: emailAddresses, // Send to all fetched email addresses
+                    subject: `New Query: ${subject}`,
+                    text: `A new query has been raised by ${clientDetails.name} (ID: ${clientDetails.id}, Email: ${clientDetails.email}, Phone: ${clientDetails.phoneNumber})\n\nSubject: ${subject}\n\nMessage: ${message}`,
+                    attachments: imageUrl ? [{ path: imageUrl }] : [],
+                };
+
+                transporter.sendMail(mailOptions, (err, info) => {
+                    if (err) {
+                        console.error('Error sending email:', err);
+                        return res.status(500).send('Error sending email');
+                    }
+
+                    console.log('Email sent:', info.response);
+                });
+
+                // Send SMS to department staff
                 staffResults.forEach(staff => {
                     const params = {
                         ApplicationId: process.env.PINPOINT_APPLICATION_ID,
@@ -103,7 +106,7 @@ exports.raiseQuery = async (req, res) => {
                             },
                             MessageConfiguration: {
                                 SMSMessage: {
-                                    Body: `New query in department ${department}: ${subject}`,
+                                    Body: `New query by ${clientDetails.name} (ID: ${clientDetails.id}, Email: ${clientDetails.email}, Phone: ${clientDetails.phoneNumber}) in department ${department}: ${subject}\nMessage: ${message}`,
                                     MessageType: 'TRANSACTIONAL'
                                 }
                             }
