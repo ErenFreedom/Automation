@@ -119,8 +119,7 @@ const RegisterPage = () => {
                 onChange={handlePhoneChange}
                 inputProps={{
                   name: 'phoneNumber',
-                  required: true,
-                  autoFocus: true
+                  required: true
                 }}
               />
             </label>
