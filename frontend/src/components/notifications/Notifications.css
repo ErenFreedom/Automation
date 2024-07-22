@@ -44,9 +44,31 @@
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  appearance: none; /* Removes the arrows */
+  -moz-appearance: textfield; /* Removes the arrows for Firefox */
 }
 
-.monitor-button, .set-thresholds-button, .update-thresholds-button {
+.update-thresholds-button {
+  display: block;
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 20px; /* Add spacing below the button */
+  padding: 12px 0;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.update-thresholds-button:hover {
+  background-color: #0056b3;
+}
+
+.monitor-button, .set-thresholds-button {
   display: block;
   width: 100%;
   margin-top: 20px;
@@ -61,7 +83,7 @@
   text-align: center;
 }
 
-.monitor-button:hover, .set-thresholds-button:hover, .update-thresholds-button:hover {
+.monitor-button:hover, .set-thresholds-button:hover {
   background-color: #0056b3;
 }
 

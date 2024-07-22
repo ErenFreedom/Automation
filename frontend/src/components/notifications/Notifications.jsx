@@ -1,4 +1,3 @@
-// src/components/notifications/Notifications.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
