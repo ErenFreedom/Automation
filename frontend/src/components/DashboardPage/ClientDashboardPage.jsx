@@ -5,6 +5,7 @@ import { fetchClientData, updateClientData } from '../../actions/clientDataActio
 import ClientDashboardHeader from '../DashboardHeader/ClientDashboardHeader';
 import 'event-source-polyfill';
 import './DashboardPage.css';
+import eyeImage from '../../assets/eye.gif'; // Assuming you have an eye animation GIF
 
 const ClientDashboardPage = () => {
   const { userId } = useParams();
@@ -45,7 +46,12 @@ const ClientDashboardPage = () => {
       <div className="dashboard-page">
         <div className="dashboard-content">
           <div className="rectangles">
-            {loading && <p>Loading data...</p>}
+            {loading && (
+              <div className="loading-container">
+                <img src={eyeImage} alt="Loading..." className="loading-eye" />
+                <p>Loading data...</p>
+              </div>
+            )}
             {error && <p className="error">{error}</p>}
             {data && data.map((apiData) => (
               <Link key={apiData.sensor_api} to={`/graph/${userId}/${encodeURIComponent(apiData.sensor_api)}`} className="rectangle-link">

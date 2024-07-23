@@ -63,11 +63,6 @@ const ClientDashboardHeader = () => {
             <button className="dashboard-button">Raise a Query</button>
           </Link>
         </div>
-        <div className="dashboard-query-status-button">
-          <Link to={`/query-status/${userId}`}>
-            <button className="dashboard-button">Check Query Status</button>
-          </Link>
-        </div>
         <div className="dashboard-report-button">
           <Link to={`/report/${userId}`}>
             <button className="dashboard-button">Generate Report</button>
