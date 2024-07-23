@@ -59,13 +59,13 @@ const ClientDashboardPage = () => {
                 <div className="rectangle">
                   <p>{apiData.sensor_api.replace(/^.*[\\/]/, '')} Value: {apiData.value}</p>
                   <p>Updated At: {apiData.timestamp}</p>
+                  {monitoring && <FaEye className="rectangle-eye" />}
                 </div>
               </Link>
             ))}
           </div>
         </div>
       </div>
-      {monitoring && <FaEye className="monitoring-icon" />}
     </div>
   );
 };

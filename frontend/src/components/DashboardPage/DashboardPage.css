@@ -46,11 +46,22 @@
   font-size: 18px;
   font-weight: bold;
   cursor: pointer; /* Add cursor pointer for clickable effect */
+  position: relative; /* Add position relative to position the eye icon */
 }
 
 .rectangle-link {
   text-decoration: none; /* Remove underline from link */
   color: inherit; /* Inherit color from parent */
+}
+
+.rectangle-eye {
+  position: absolute;
+  bottom: 10px; /* Adjust as needed */
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 24px;
+  color: #007bff;
+  animation: spin 2s linear infinite;
 }
 
 /* Media queries for smaller screens */
@@ -135,39 +146,7 @@
   }
 }
 
-.loading-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-}
-
-.loading-eye {
-  font-size: 2em;
-  animation: eye-blink 1.5s infinite;
-  color: #61dafb;
-}
-
-.monitoring-icon {
-  position: fixed;
-  top: 200px; /* Adjust this value to push the icon below the header */
-  right: 20px;
-  font-size: 24px;
-  color: #007bff;
-  animation: spin 2s linear infinite;
-}
-
-
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-}
-
-@keyframes eye-blink {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(0.8);
-  }
 }
