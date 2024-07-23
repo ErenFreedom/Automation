@@ -12,17 +12,36 @@ AWS.config.update({
 const sns = new AWS.SNS({ apiVersion: '2010-03-31' });
 
 const verifyToken = (req) => {
+    if (!req.headers.authorization) {
+        throw new Error('No authorization header provided');
+    }
     const token = req.headers.authorization.split(' ')[1];
     return jwt.verify(token, process.env.SECRET_KEY);
 };
 
+const getStaffInfo = (userId) => {
+    return new Promise((resolve, reject) => {
+        const query = 'SELECT id, email, department FROM staff WHERE id = ?';
+        db.query(query, [userId], (err, results) => {
+            if (err) {
+                return reject(err);
+            }
+            if (results.length === 0) {
+                return reject(new Error('Staff member not found'));
+            }
+            resolve(results[0]);
+        });
+    });
+};
+
 // Function to update query status to 'Pending'
-exports.receiveQuery = (req, res) => {
+exports.receiveQuery = async (req, res) => {
     try {
         const decoded = verifyToken(req);
         const staffId = decoded.id;
         const { queryId } = req.body;
 
+        const staffInfo = await getStaffInfo(staffId);
         const updateStatusQuery = `UPDATE query_status SET status = 'Pending', viewed_by = ?, viewed_at = NOW() WHERE query_id = ?`;
         db.query(updateStatusQuery, [staffId, queryId], (err, results) => {
             if (err) {
@@ -64,13 +83,13 @@ exports.receiveQuery = (req, res) => {
 };
 
 // Function to update query status to 'Closed'
-exports.closeQuery = (req, res) => {
+exports.closeQuery = async (req, res) => {
     try {
         const decoded = verifyToken(req);
         const staffId = decoded.id;
         const { queryId } = req.body;
 
-        // First, fetch the viewed_at time and client email
+        const staffInfo = await getStaffInfo(staffId);
         const getQueryDetailsQuery = `SELECT qs.viewed_at, q.clientEmail, c.phoneNumber FROM query_status qs JOIN queries q ON qs.query_id = q.id JOIN clients c ON q.clientEmail = c.email WHERE qs.query_id = ?`;
         db.query(getQueryDetailsQuery, [queryId], (err, results) => {
             if (err || results.length === 0) {
