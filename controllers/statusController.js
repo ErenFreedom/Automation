@@ -14,37 +14,46 @@ const sns = new AWS.SNS({ apiVersion: '2010-03-31' });
 exports.receiveQuery = (req, res) => {
     const { queryId, staffId } = req.body;
 
-    const updateStatusQuery = `UPDATE query_status SET status = 'Pending', viewed_by = ?, viewed_at = NOW() WHERE query_id = ?`;
-    db.query(updateStatusQuery, [staffId, queryId], (err, results) => {
-        if (err) {
-            console.error('Error updating query status to Pending:', err);
-            return res.status(500).send('Error updating query status to Pending');
+    // Check if staffId exists in the staff table
+    const checkStaffQuery = 'SELECT id FROM staff WHERE id = ?';
+    db.query(checkStaffQuery, [staffId], (err, results) => {
+        if (err || results.length === 0) {
+            console.error('Invalid staffId:', err || 'No staff found');
+            return res.status(400).send('Invalid staffId');
         }
 
-        // Fetch client email and phone number
-        const getClientDetailsQuery = `SELECT q.clientEmail, c.phoneNumber FROM queries q JOIN clients c ON q.clientEmail = c.email WHERE q.id = ?`;
-        db.query(getClientDetailsQuery, [queryId], (err, results) => {
-            if (err || results.length === 0) {
-                console.error('Error fetching client details:', err);
-                return res.status(500).send('Error fetching client details');
+        const updateStatusQuery = `UPDATE query_status SET status = 'Pending', viewed_by = ?, viewed_at = NOW() WHERE query_id = ?`;
+        db.query(updateStatusQuery, [staffId, queryId], (err, results) => {
+            if (err) {
+                console.error('Error updating query status to Pending:', err);
+                return res.status(500).send('Error updating query status to Pending');
             }
 
-            const clientDetails = results[0];
-
-            // Send SMS to the client
-            const params = {
-                Message: `Your query has been received and is now pending.`,
-                PhoneNumber: clientDetails.phoneNumber,
-            };
-
-            sns.publish(params, (err, data) => {
-                if (err) {
-                    console.error('Error sending SMS:', err);
-                    return res.status(500).send('Error sending SMS');
+            // Fetch client email and phone number
+            const getClientDetailsQuery = `SELECT q.clientEmail, c.phoneNumber FROM queries q JOIN clients c ON q.clientEmail = c.email WHERE q.id = ?`;
+            db.query(getClientDetailsQuery, [queryId], (err, results) => {
+                if (err || results.length === 0) {
+                    console.error('Error fetching client details:', err);
+                    return res.status(500).send('Error fetching client details');
                 }
 
-                console.log('SMS sent:', data);
-                res.status(200).send('Query status updated to Pending and client notified');
+                const clientDetails = results[0];
+
+                // Send SMS to the client
+                const params = {
+                    Message: `Your query has been received and is now pending.`,
+                    PhoneNumber: clientDetails.phoneNumber,
+                };
+
+                sns.publish(params, (err, data) => {
+                    if (err) {
+                        console.error('Error sending SMS:', err);
+                        return res.status(500).send('Error sending SMS');
+                    }
+
+                    console.log('SMS sent:', data);
+                    res.status(200).send('Query status updated to Pending and client notified');
+                });
             });
         });
     });

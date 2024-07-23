@@ -1,45 +1,50 @@
 .staff-query-view-container {
   padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: 'Arial', sans-serif;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-h1 {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.error {
-  color: red;
-  text-align: center;
-}
-
-.queries-list {
+.staff-query-view-container .header-container {
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-bottom: 20px;
 }
 
-.query-card {
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+.staff-query-view-container .logo {
+  height: 80px;
+  margin-bottom: 10px;
+}
+
+.staff-query-view-container .queries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.staff-query-view-container .query-card {
+  background-color: #ffffff;
   padding: 20px;
-  margin: 10px;
-  width: 80%;
+  border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.query-card p {
-  margin: 10px 0;
+.staff-query-view-container .query-card p {
+  margin: 5px 0;
 }
 
-.query-image {
+.staff-query-view-container .query-card img {
   max-width: 100%;
   height: auto;
   border-radius: 8px;
   margin: 10px 0;
 }
 
-.status-button {
+.staff-query-view-container .status-button {
   padding: 10px 20px;
   background-color: #007bff;
   color: white;
@@ -49,6 +54,26 @@ h1 {
   margin-top: 10px;
 }
 
-.status-button:hover {
+.staff-query-view-container .status-button:hover {
   background-color: #0056b3;
+}
+
+.staff-query-view-container .error {
+  color: red;
+  text-align: center;
+}
+
+/* Media queries for smaller screens */
+@media (max-width: 600px) {
+  .staff-query-view-container {
+    padding: 10px;
+  }
+
+  .staff-query-view-container .query-card {
+    padding: 15px;
+  }
+
+  .staff-query-view-container .query-card p {
+    font-size: 14px;
+  }
 }
