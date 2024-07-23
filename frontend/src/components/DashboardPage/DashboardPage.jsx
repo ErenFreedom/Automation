@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchData, updateData } from '../../actions/dataActions';
 import DashboardHeader from '../DashboardHeader/DashboardHeader';
+import { FaEye } from 'react-icons/fa';
 import 'event-source-polyfill';
 import './DashboardPage.css';
 
@@ -12,6 +13,7 @@ const DashboardPage = () => {
   const data = useSelector((state) => state.data.data);
   const loading = useSelector((state) => state.data.loading);
   const error = useSelector((state) => state.data.error);
+  const [monitoring, setMonitoring] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -36,6 +38,10 @@ const DashboardPage = () => {
     }
   }, [dispatch]);
 
+  useEffect(() => {
+    setMonitoring(true);
+  }, []);
+
   return (
     <div className="dashboard-page-container">
       <DashboardHeader />
@@ -45,7 +51,12 @@ const DashboardPage = () => {
       <div className="dashboard-page">
         <div className="dashboard-content">
           <div className="rectangles">
-            {loading && <p>Loading data...</p>}
+            {loading && (
+              <div className="loading-container">
+                <FaEye className="loading-eye" />
+                <p>Loading data...</p>
+              </div>
+            )}
             {error && <p className="error">{error}</p>}
             {data && data.map((apiData) => (
               <Link key={apiData.sensor_api} to={`/graph/${userId}/${encodeURIComponent(apiData.sensor_api)}`} className="rectangle-link">

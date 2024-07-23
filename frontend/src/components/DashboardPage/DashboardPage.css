@@ -134,3 +134,25 @@
     font-size: 14px; /* Adjust font size */
   }
 }
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.loading-eye {
+  font-size: 2em;
+  animation: eye-blink 1.5s infinite;
+  color: #61dafb;
+}
+
+@keyframes eye-blink {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.8);
+  }
+}

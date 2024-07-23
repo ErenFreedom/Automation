@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchClientData, updateClientData } from '../../actions/clientDataActions';
 import ClientDashboardHeader from '../DashboardHeader/ClientDashboardHeader';
+import { FaEye } from 'react-icons/fa';
 import 'event-source-polyfill';
 import './DashboardPage.css';
-import eyeImage from '../../assets/eye.gif'; // Assuming you have an eye animation GIF
 
 const ClientDashboardPage = () => {
   const { userId } = useParams();
@@ -13,6 +13,7 @@ const ClientDashboardPage = () => {
   const data = useSelector((state) => state.clientData.data);
   const loading = useSelector((state) => state.clientData.loading);
   const error = useSelector((state) => state.clientData.error);
+  const [monitoring, setMonitoring] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -37,6 +38,10 @@ const ClientDashboardPage = () => {
     }
   }, [dispatch]);
 
+  useEffect(() => {
+    setMonitoring(true);
+  }, []);
+
   return (
     <div className="dashboard-page-container">
       <ClientDashboardHeader />
@@ -48,7 +53,7 @@ const ClientDashboardPage = () => {
           <div className="rectangles">
             {loading && (
               <div className="loading-container">
-                <img src={eyeImage} alt="Loading..." className="loading-eye" />
+                <FaEye className="loading-eye" />
                 <p>Loading data...</p>
               </div>
             )}
