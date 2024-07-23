@@ -20,7 +20,7 @@ const StaffQueryView = () => {
     };
 
     fetchQueries();
-    const interval = setInterval(fetchQueries, 5000); // Fetch queries every 5 seconds
+    const interval = setInterval(fetchQueries, 300000); // Fetch queries every 5 minutes
 
     return () => clearInterval(interval); // Cleanup the interval on component unmount
   }, [department]);
