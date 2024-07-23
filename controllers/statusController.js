@@ -38,7 +38,7 @@ const getStaffInfo = (userId) => {
 exports.receiveQuery = async (req, res) => {
     try {
         const decoded = verifyToken(req);
-        const staffId = decoded.id;
+        const staffId = decoded.userId;
         const { queryId } = req.body;
 
         const staffInfo = await getStaffInfo(staffId);
@@ -86,7 +86,7 @@ exports.receiveQuery = async (req, res) => {
 exports.closeQuery = async (req, res) => {
     try {
         const decoded = verifyToken(req);
-        const staffId = decoded.id;
+        const staffId = decoded.userId;
         const { queryId } = req.body;
 
         const staffInfo = await getStaffInfo(staffId);

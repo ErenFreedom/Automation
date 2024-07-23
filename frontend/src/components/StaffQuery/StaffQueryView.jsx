@@ -8,11 +8,16 @@ const StaffQueryView = () => {
   const [queries, setQueries] = useState([]);
   const [error, setError] = useState('');
   const department = 'temperature'; // This should be dynamically fetched based on staff details
+  const token = localStorage.getItem('authToken'); // Retrieve token from local storage
 
   useEffect(() => {
     const fetchQueries = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/staff-queries/${department}`);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/staff-queries/${department}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         setQueries(response.data);
       } catch (error) {
         setError('Failed to fetch queries');
@@ -23,11 +28,15 @@ const StaffQueryView = () => {
     const interval = setInterval(fetchQueries, 300000); // Fetch queries every 5 minutes
 
     return () => clearInterval(interval); // Cleanup the interval on component unmount
-  }, [department]);
+  }, [department, token]);
 
   const handleReceive = async (queryId) => {
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/receive-query`, { queryId, staffId: 1 }); // Assuming staffId is 1 for now
+      await axios.post(`${process.env.REACT_APP_API_URL}/receive-query`, { queryId }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       toast.success('Query status updated to Pending');
       setQueries(queries.map(query => query.id === queryId ? { ...query, status: 'Pending' } : query));
     } catch (error) {
@@ -37,7 +46,11 @@ const StaffQueryView = () => {
 
   const handleClose = async (queryId) => {
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/close-query`, { queryId, staffId: 1 }); // Assuming staffId is 1 for now
+      await axios.post(`${process.env.REACT_APP_API_URL}/close-query`, { queryId }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       toast.success('Query status updated to Closed');
       setQueries(queries.map(query => query.id === queryId ? { ...query, status: 'Closed' } : query));
     } catch (error) {
