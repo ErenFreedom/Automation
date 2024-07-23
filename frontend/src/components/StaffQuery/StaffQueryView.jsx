@@ -1,97 +1,77 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './StaffQueryView.css';
-import logo from '../../assets/logo.png';
 
 const StaffQueryView = () => {
   const [queries, setQueries] = useState([]);
-  const [staffEmail, setStaffEmail] = useState(localStorage.getItem('staffEmail') || '');
+  const [error, setError] = useState('');
+  const department = 'temperature'; // This should be dynamically fetched based on staff details
 
   useEffect(() => {
-    if (staffEmail) {
-      fetchQueries();
-    }
-  }, [staffEmail]);
+    const fetchQueries = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/staff-queries/${department}`);
+        setQueries(response.data);
+      } catch (error) {
+        setError('Failed to fetch queries');
+      }
+    };
 
-  const fetchQueries = async () => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/staff-queries`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
-      setQueries(response.data);
-    } catch (error) {
-      console.error('Error fetching queries:', error);
-    }
-  };
+    fetchQueries();
+    const interval = setInterval(fetchQueries, 5000); // Fetch queries every 5 seconds
 
-  const handleReceiveQuery = async (queryId) => {
+    return () => clearInterval(interval); // Cleanup the interval on component unmount
+  }, [department]);
+
+  const handleReceive = async (queryId) => {
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/receive-query`, { queryId }, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
-      fetchQueries();
+      await axios.post(`${process.env.REACT_APP_API_URL}/receive-query`, { queryId, staffId: 1 }); // Assuming staffId is 1 for now
+      toast.success('Query status updated to Pending');
+      setQueries(queries.map(query => query.id === queryId ? { ...query, status: 'Pending' } : query));
     } catch (error) {
-      console.error('Error receiving query:', error);
+      toast.error('Failed to update query status');
     }
   };
 
-  const handleCloseQuery = async (queryId) => {
+  const handleClose = async (queryId) => {
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/close-query`, { queryId }, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
-      fetchQueries();
+      await axios.post(`${process.env.REACT_APP_API_URL}/close-query`, { queryId, staffId: 1 }); // Assuming staffId is 1 for now
+      toast.success('Query status updated to Closed');
+      setQueries(queries.map(query => query.id === queryId ? { ...query, status: 'Closed' } : query));
     } catch (error) {
-      console.error('Error closing query:', error);
+      toast.error('Failed to update query status');
     }
   };
 
   return (
-    <div className="query-view-container">
-      <div className="header-container">
-        <img src={logo} className="logo" alt="Platform Logo" />
-        <h1>All Queries</h1>
-      </div>
-      <div className="query-list">
-        {queries.length > 0 ? (
-          queries.map((query, index) => (
-            <div key={index} className={`query-card status-${query.status.toLowerCase()}`}>
-              <h2>{query.subject}</h2>
+    <div className="staff-query-view-container">
+      <ToastContainer />
+      <h1>Department Queries</h1>
+      {error && <p className="error">{error}</p>}
+      {queries.length === 0 ? (
+        <p>No queries found.</p>
+      ) : (
+        <div className="queries-list">
+          {queries.map(query => (
+            <div key={query.id} className="query-card">
               <p><strong>Client Email:</strong> {query.clientEmail}</p>
               <p><strong>Department:</strong> {query.department}</p>
+              <p><strong>Subject:</strong> {query.subject}</p>
               <p><strong>Message:</strong> {query.message}</p>
-              {query.imageUrl && (
-                <p>
-                  <strong>Image:</strong> <a href={`${process.env.REACT_APP_API_URL}/${query.imageUrl}`} target="_blank" rel="noopener noreferrer">View Image</a>
-                </p>
-              )}
+              {query.imageUrl && <img src={`${process.env.REACT_APP_API_URL}/${query.imageUrl}`} alt="Query Attachment" className="query-image" />}
               <p><strong>Status:</strong> {query.status}</p>
-              <p><strong>Raised At:</strong> {new Date(query.created_at).toLocaleString()}</p>
-              {query.status === 'Finished' && (
-                <div>
-                  <p><strong>Closed By:</strong> {query.closed_by}</p>
-                  <p><strong>Closed At:</strong> {new Date(query.closed_at).toLocaleString()}</p>
-                  <p><strong>Time to Close:</strong> {query.time_to_close} minutes</p>
-                </div>
-              )}
               {query.status === 'Received' && (
-                <button onClick={() => handleReceiveQuery(query.id)}>Receive</button>
+                <button className="status-button" onClick={() => handleReceive(query.id)}>Receive Query</button>
               )}
               {query.status === 'Pending' && (
-                <button onClick={() => handleCloseQuery(query.id)}>Close Call</button>
+                <button className="status-button" onClick={() => handleClose(query.id)}>Close Query</button>
               )}
             </div>
-          ))
-        ) : (
-          <p>No queries found.</p>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

@@ -1,100 +1,54 @@
-.query-view-container {
+.staff-query-view-container {
   padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
-  font-family: 'Arial', sans-serif;
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.header-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+h1 {
+  text-align: center;
   margin-bottom: 20px;
 }
 
-.logo {
-  height: 80px;
-  margin-bottom: 10px;
+.error {
+  color: red;
+  text-align: center;
 }
 
-.query-list {
+.queries-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  align-items: center;
 }
 
 .query-card {
-  background-color: #ffffff;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
   padding: 20px;
-  border-radius: 10px;
+  margin: 10px;
+  width: 80%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.query-card h2 {
-  margin-top: 0;
-}
-
 .query-card p {
-  margin: 5px 0;
+  margin: 10px 0;
 }
 
-.query-card a {
-  color: #007bff;
-  text-decoration: none;
+.query-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 10px 0;
 }
 
-.query-card a:hover {
-  text-decoration: underline;
-}
-
-.status-received {
-  border-left: 5px solid #ffc107;
-}
-
-.status-pending {
-  border-left: 5px solid #17a2b8;
-}
-
-.status-finished {
-  border-left: 5px solid #28a745;
-}
-
-button {
-  margin-top: 10px;
-  padding: 10px;
+.status-button {
+  padding: 10px 20px;
   background-color: #007bff;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  margin-top: 10px;
 }
 
-button:hover {
+.status-button:hover {
   background-color: #0056b3;
-}
-
-/* Media queries for smaller screens */
-@media (max-width: 600px) {
-  .query-view-container {
-    padding: 10px;
-  }
-
-  .header-container h1 {
-    font-size: 24px;
-  }
-
-  .query-card {
-    padding: 15px;
-  }
-
-  .query-card h2 {
-    font-size: 20px;
-  }
-
-  .query-card p {
-    font-size: 14px;
-  }
 }

@@ -10,18 +10,43 @@ AWS.config.update({
 
 const sns = new AWS.SNS({ apiVersion: '2010-03-31' });
 
-// Function to update query status to 'Received'
+// Function to update query status to 'Pending'
 exports.receiveQuery = (req, res) => {
     const { queryId, staffId } = req.body;
 
-    const updateStatusQuery = `UPDATE query_status SET status = 'Received', viewed_by = ?, viewed_at = NOW() WHERE query_id = ?`;
+    const updateStatusQuery = `UPDATE query_status SET status = 'Pending', viewed_by = ?, viewed_at = NOW() WHERE query_id = ?`;
     db.query(updateStatusQuery, [staffId, queryId], (err, results) => {
         if (err) {
-            console.error('Error updating query status to Received:', err);
-            return res.status(500).send('Error updating query status to Received');
+            console.error('Error updating query status to Pending:', err);
+            return res.status(500).send('Error updating query status to Pending');
         }
 
-        res.status(200).send('Query status updated to Received');
+        // Fetch client email and phone number
+        const getClientDetailsQuery = `SELECT q.clientEmail, c.phoneNumber FROM queries q JOIN clients c ON q.clientEmail = c.email WHERE q.id = ?`;
+        db.query(getClientDetailsQuery, [queryId], (err, results) => {
+            if (err || results.length === 0) {
+                console.error('Error fetching client details:', err);
+                return res.status(500).send('Error fetching client details');
+            }
+
+            const clientDetails = results[0];
+
+            // Send SMS to the client
+            const params = {
+                Message: `Your query has been received and is now pending.`,
+                PhoneNumber: clientDetails.phoneNumber,
+            };
+
+            sns.publish(params, (err, data) => {
+                if (err) {
+                    console.error('Error sending SMS:', err);
+                    return res.status(500).send('Error sending SMS');
+                }
+
+                console.log('SMS sent:', data);
+                res.status(200).send('Query status updated to Pending and client notified');
+            });
+        });
     });
 };
 
@@ -30,7 +55,7 @@ exports.closeQuery = (req, res) => {
     const { queryId, staffId } = req.body;
 
     // First, fetch the viewed_at time and client email
-    const getQueryDetailsQuery = `SELECT qs.viewed_at, q.clientEmail FROM query_status qs JOIN queries q ON qs.query_id = q.id WHERE qs.query_id = ?`;
+    const getQueryDetailsQuery = `SELECT qs.viewed_at, q.clientEmail, c.phoneNumber FROM query_status qs JOIN queries q ON qs.query_id = q.id JOIN clients c ON q.clientEmail = c.email WHERE qs.query_id = ?`;
     db.query(getQueryDetailsQuery, [queryId], (err, results) => {
         if (err || results.length === 0) {
             console.error('Error fetching query details:', err);
@@ -39,6 +64,7 @@ exports.closeQuery = (req, res) => {
 
         const viewedAt = results[0].viewed_at;
         const clientEmail = results[0].clientEmail;
+        const clientPhoneNumber = results[0].phoneNumber;
         const closedAt = moment().format('YYYY-MM-DD HH:mm:ss');
         const duration = moment(closedAt).diff(moment(viewedAt), 'minutes');
 
@@ -74,7 +100,7 @@ exports.closeQuery = (req, res) => {
                     // Send SMS to the client
                     const params = {
                         Message: `Your query has been resolved.\n\nQuery Details:\nSubject: ${queryDetail.subject}\nMessage: ${queryDetail.message}\nStatus: ${queryDetail.status}\nClosed By: ${queryDetail.closed_by}\nViewed At: ${queryDetail.viewed_at}\nClosed At: ${queryDetail.closed_at}\nTime to Close: ${queryDetail.time_to_close} minutes`,
-                        PhoneNumber: queryDetail.clientEmail,
+                        PhoneNumber: clientPhoneNumber,
                     };
 
                     sns.publish(params, (err, data) => {
@@ -103,6 +129,23 @@ exports.getClientQueries = (req, res) => {
         if (err) {
             console.error('Error fetching client queries:', err);
             return res.status(500).send('Error fetching client queries');
+        }
+
+        res.status(200).json(results);
+    });
+};
+
+// Function to get query status for staff based on department
+exports.getStaffQueries = (req, res) => {
+    const { department } = req.params;
+
+    const getQueriesQuery = `SELECT q.*, qs.status FROM queries q
+                             JOIN query_status qs ON q.id = qs.query_id
+                             WHERE q.department = ?`;
+    db.query(getQueriesQuery, [department], (err, results) => {
+        if (err) {
+            console.error('Error fetching department queries:', err);
+            return res.status(500).send('Error fetching department queries');
         }
 
         res.status(200).json(results);
