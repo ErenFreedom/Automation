@@ -13,7 +13,7 @@ const DashboardPage = () => {
   const data = useSelector((state) => state.data.data);
   const loading = useSelector((state) => state.data.loading);
   const error = useSelector((state) => state.data.error);
-  const [monitoring, setMonitoring] = useState(false);
+  const [monitoring, setMonitoring] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -37,10 +37,6 @@ const DashboardPage = () => {
       };
     }
   }, [dispatch]);
-
-  useEffect(() => {
-    setMonitoring(true);
-  }, []);
 
   return (
     <div className="dashboard-page-container">
@@ -69,6 +65,7 @@ const DashboardPage = () => {
           </div>
         </div>
       </div>
+      {monitoring && <FaEye className="monitoring-icon" />}
     </div>
   );
 };

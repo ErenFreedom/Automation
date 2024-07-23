@@ -148,6 +148,20 @@
   color: #61dafb;
 }
 
+.monitoring-icon {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  font-size: 24px;
+  color: #007bff;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 @keyframes eye-blink {
   0%, 100% {
     transform: scale(1);
