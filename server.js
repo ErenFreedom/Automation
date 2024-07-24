@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const session = require('express-session');
-const RedisStore = require('connect-redis')(session);
+const RedisStore = require('connect-redis').default;
 const { createClient } = require('redis');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
@@ -27,10 +27,6 @@ const server = https.createServer(sslOptions, app);
 // Create a Redis client
 const redisClient = createClient({
   url: 'redis://redis:6379'
-});
-
-redisClient.on('error', (err) => {
-  console.error('Redis error:', err);
 });
 
 redisClient.connect().catch(console.error);
