@@ -83,7 +83,7 @@ exports.streamSensorData = (req, res) => {
 
             if (clientResults.length > 0) {
                 const schemaName = `client_sensor_data_${userId}`;
-                streamDataForSchema(schemaName, res);
+                streamDataForSchema(req, schemaName, res);  // Pass req here
             } else {
                 res.write(`data: ${JSON.stringify({ error: 'User not found' })}\n\n`);
             }
@@ -94,7 +94,7 @@ exports.streamSensorData = (req, res) => {
     }
 };
 
-const streamDataForSchema = (schemaName, res) => {
+const streamDataForSchema = (req, schemaName, res) => {  // Accept req as a parameter
     const fetchLatestDataQuery = `
         SELECT * FROM ${schemaName} AS s1
         WHERE s1.id = (
