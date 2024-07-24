@@ -17,8 +17,8 @@ const port = process.env.PORT || 3001;
 
 // SSL Certificate and Key
 const sslOptions = {
-  key: fs.readFileSync('./key.pem'), 
-  cert: fs.readFileSync('./cert.pem') 
+  key: fs.readFileSync('./key.pem'),
+  cert: fs.readFileSync('./cert.pem')
 };
 
 // Create HTTPS server
@@ -26,14 +26,14 @@ const server = https.createServer(sslOptions, app);
 
 // Create a Redis client
 const redisClient = createClient({
-  url: 'redis://localhost:6379'
+  url: 'redis://redis:6379'
 });
-
-redisClient.connect().catch(console.error);
 
 redisClient.on('error', (err) => {
   console.error('Redis error:', err);
 });
+
+redisClient.connect().catch(console.error);
 
 // Middleware for JWT authentication
 const authenticateToken = (req, res, next) => {
@@ -142,4 +142,3 @@ require('./scheduler');
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-// touch
