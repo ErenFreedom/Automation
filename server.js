@@ -8,7 +8,7 @@ const path = require('path');
 const cors = require('cors');
 const session = require('express-session');
 const RedisStore = require('connect-redis')(session);
-const redis = require('redis');
+const { createClient } = require('redis');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
@@ -25,10 +25,11 @@ const sslOptions = {
 const server = https.createServer(sslOptions, app);
 
 // Create a Redis client
-const redisClient = redis.createClient({
-  host: 'localhost',
-  port: 6379
+const redisClient = createClient({
+  url: 'redis://localhost:6379'
 });
+
+redisClient.connect().catch(console.error);
 
 redisClient.on('error', (err) => {
   console.error('Redis error:', err);
@@ -141,4 +142,3 @@ require('./scheduler');
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
