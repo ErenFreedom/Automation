@@ -18,7 +18,7 @@ const SensorTags = () => {
     }, []);
 
     const fetchUniqueAPIs = (token) => {
-        fetch('https://ec2-3-109-41-79.ap-south-1.compute.amazonaws.com/api/sensors/get-unique-sensor-apis', {
+        fetch('https://ec2-3-109-41-79.ap-south-1.compute.amazonaws.com/api/sensor-tags/get-unique-sensor-apis', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -42,7 +42,7 @@ const SensorTags = () => {
             tag: mappings[index]?.tag || ''
         }));
 
-        fetch('https://ec2-3-109-41-79.ap-south-1.compute.amazonaws.com/api/sensors/map-sensor-apis-to-tags', {
+        fetch('https://ec2-3-109-41-79.ap-south-1.compute.amazonaws.com/api/sensor-tags/map-sensor-apis-to-tags', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
