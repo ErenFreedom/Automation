@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './SensorTags.css';
+import jwtDecode from 'jwt-decode';
 
 const SensorTags = () => {
     const [uniqueAPIs, setUniqueAPIs] = useState([]);
@@ -7,14 +8,12 @@ const SensorTags = () => {
     const [authToken, setAuthToken] = useState('');
 
     useEffect(() => {
-        // Fetch auth token from Redis
-        fetch('/api/get-auth-token')
-            .then(response => response.json())
-            .then(data => {
-                setAuthToken(data.token);
-                fetchUniqueAPIs(data.token);
-            })
-            .catch(error => console.error('Error fetching auth token:', error));
+        // Fetch auth token from local storage
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            setAuthToken(token);
+            fetchUniqueAPIs(token);
+        }
     }, []);
 
     const fetchUniqueAPIs = (token) => {
@@ -32,7 +31,7 @@ const SensorTags = () => {
 
     const handleMappingChange = (index, newTag) => {
         const updatedMappings = [...mappings];
-        updatedMappings[index].tag = newTag;
+        updatedMappings[index] = { ...updatedMappings[index], tag: newTag };
         setMappings(updatedMappings);
     };
 
@@ -77,7 +76,7 @@ const SensorTags = () => {
                     </div>
                 ))}
             </div>
-            <button onClick={handleSubmit}>Save Tags</button>
+            <button className="sensor-tags-submit-button" onClick={handleSubmit}>Save Tags</button>
         </div>
     );
 };
