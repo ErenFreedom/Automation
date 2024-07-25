@@ -1,0 +1,60 @@
+.sensor-tags-container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sensor-tags-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.sensor-tags-container p {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #666;
+}
+
+.sensor-tags-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sensor-tag-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.sensor-tag-item label {
+    font-weight: bold;
+    color: #555;
+}
+
+.sensor-tag-item input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
