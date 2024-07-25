@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './SensorTags.css';
-import jwtDecode from 'jwt-decode';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const SensorTags = () => {
     const [uniqueAPIs, setUniqueAPIs] = useState([]);
@@ -51,16 +52,20 @@ const SensorTags = () => {
             .then(response => response.json())
             .then(data => {
                 if (data.message === 'Mappings updated successfully') {
-                    alert('Sensor tags updated successfully!');
+                    toast.success('Sensor tags updated successfully!');
                 } else {
-                    alert('Failed to update sensor tags.');
+                    toast.error('Failed to update sensor tags.');
                 }
             })
-            .catch(error => console.error('Error updating sensor tags:', error));
+            .catch(error => {
+                console.error('Error updating sensor tags:', error);
+                toast.error('Failed to update sensor tags.');
+            });
     };
 
     return (
         <div className="sensor-tags-container">
+            <ToastContainer />
             <h2>Configure Sensor Tags</h2>
             <p>Map your sensor APIs to meaningful tags.</p>
             <div className="sensor-tags-form">
