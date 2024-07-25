@@ -5,7 +5,8 @@ exports.getUniqueSensorAPIs = async (req, res) => {
     const { token } = req.body;
 
     try {
-        const decoded = jwt.verify(token, 'your_secret_key');
+        const secretKey = process.env.SECRET_KEY;
+        const decoded = jwt.verify(token, secretKey);
         const { userId, role } = decoded;
         const tableName = role === 'client' ? `client_sensor_data_${userId}` : `staff_sensor_data_${userId}`;
 
@@ -28,7 +29,8 @@ exports.mapSensorAPIsToTags = async (req, res) => {
     const { token, mappings } = req.body;
 
     try {
-        const decoded = jwt.verify(token, 'your_secret_key');
+        const secretKey = process.env.SECRET_KEY;
+        const decoded = jwt.verify(token, secretKey);
         const { userId, role } = decoded;
         const tableName = role === 'client' ? `client_sensor_data_${userId}` : `staff_sensor_data_${userId}`;
 
