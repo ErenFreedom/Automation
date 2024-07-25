@@ -68,6 +68,11 @@ const ClientDashboardHeader = () => {
             <button className="dashboard-button">Generate Report</button>
           </Link>
         </div>
+        <div className="dashboard-report-button">
+          <Link to="/sensor-tags">
+            <button className="dashboard-button">Configure Sensor Tags</button>
+          </Link>
+        </div>
         <div className="dashboard-notification-dropdown">
           <FaBell className="dashboard-icon" onClick={handleNotificationClick} />
         </div>

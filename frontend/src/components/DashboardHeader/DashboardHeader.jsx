@@ -71,6 +71,11 @@ const DashboardHeader = () => {
             <button>Check Queries</button>
           </Link>
         </div>
+        <div className="dashboard-report-button">
+          <Link to="/sensor-tags">
+            <button>Configure Sensor Tags</button>
+          </Link>
+        </div>
         <div className="dashboard-profile-dropdown">
           <FaUserCircle className="dashboard-icon" />
           <div className="dashboard-dropdown-content">
