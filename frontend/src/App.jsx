@@ -24,7 +24,6 @@ import RaiseQuery from './components/ClientQuery/RaiseQuery';
 import ClientQueryStatus from './components/ClientQuery/clientQueryStatus'; 
 import StaffQueryView from './components/StaffQuery/StaffQueryView'; 
 import GraphPage from './components/GraphPage/GraphPage'; // Import GraphPage
-import SensorTags from './components/SensorTags/SensorTags'; // Import SensorTags
 
 function App() {
   return (
@@ -54,7 +53,6 @@ function App() {
         <Route path="/query-status/:userId" element={<ClientQueryStatus />} /> 
         <Route path="/staff-queries/:userId" element={<StaffQueryView />} /> 
         <Route path="/graph/:userId/:sensorApi" element={<GraphPage />} /> {/* Add route for GraphPage */}
-        <Route path="/sensor-tags" element={<SensorTags />} /> {/* Add route for SensorTags */}
       </Routes>
     </Router>
   );
