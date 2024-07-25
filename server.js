@@ -107,6 +107,7 @@ const clientSensorDataRoutes = require('./routes/clientSensorDataRoutes');
 const clientGraphRoutes = require('./routes/clientGraphRoutes');
 const clientReportRoutes = require('./routes/clientReportRoutes');
 const clientNotificationRoutes = require('./routes/clientNotificationRoutes');
+const apiRoutes = require('./routes/apiRoutes');
 
 // Use routes
 app.use('/api', authRoutes);
@@ -130,6 +131,7 @@ app.use('/api/client-sensor-data', clientSensorDataRoutes);
 app.use('/api/client-graph-data', clientGraphRoutes);
 app.use('/api/client-report', clientReportRoutes);
 app.use('/api', clientNotificationRoutes);
+app.use('/api/sensors', apiRoutes);
 
 // Start the scheduler
 require('./scheduler');
