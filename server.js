@@ -4,11 +4,8 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const https = require('https');
 const fs = require('fs');
-const path = require('path');
 const cors = require('cors');
 const session = require('express-session');
-const RedisStore = require('connect-redis').default;
-const { createClient } = require('redis');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
@@ -24,26 +21,16 @@ const sslOptions = {
 // Create HTTPS server
 const server = https.createServer(sslOptions, app);
 
-// Create a Redis client
-const redisClient = createClient({
-  url: 'redis://redis:6379'
-});
-
-redisClient.connect().catch(console.error);
-
 // Middleware for JWT authentication
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
   if (!token) return res.sendStatus(401);
 
-  redisClient.get(token, (err, data) => {
-    if (err || !data) return res.sendStatus(403);
-    jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
-      if (err) return res.sendStatus(403);
-      req.user = user;
-      next();
-    });
+  jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
   });
 };
 
@@ -69,9 +56,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Session management with Redis
+// Session management
 app.use(session({
-  store: new RedisStore({ client: redisClient }),
   secret: process.env.SECRET_KEY,
   resave: false,
   saveUninitialized: false,
