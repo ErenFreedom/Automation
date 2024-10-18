@@ -41,7 +41,8 @@ app.use(helmet());
 
 // CORS configuration
 app.use(cors({
-  origin: 'ec2-13-126-117-233.ap-south-1.compute.amazonaws.com',
+  origin: 'https://ec2-13-126-117-233.ap-south-1.compute.amazonaws.com',
+
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']
