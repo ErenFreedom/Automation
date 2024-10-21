@@ -2,7 +2,7 @@ const db = require('../config/db');
 const bcrypt = require('bcrypt');
 const { validationResult } = require('express-validator');
 const nodemailer = require('nodemailer');
-const { decryptData } = require('../utils/otpGeneration'); // Assuming decryptData is the function used for decryption
+const { decryptData } = require('../utils/otpGeneration');
 require('dotenv').config();
 
 // Generate a random 12-16 digit activation key
@@ -44,7 +44,7 @@ exports.cloudLogin = async (req, res) => {
     }
 
     const { identifier, password } = req.body; // Identifier can be email or username
-    const decryptedPassword = decryptData(password);  // Decrypting the password like your existing code
+    const decryptedPassword = decryptData(password);  // Decrypting the password
 
     // Query for both staff and clients
     const query = `
@@ -66,10 +66,11 @@ exports.cloudLogin = async (req, res) => {
 
         // Generate activation key
         const activationKey = generateActivationKey();
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // Set expiration to 24 hours from now
 
-        // Insert the activation key into the activation_keys table
-        const insertActivationKeyQuery = 'INSERT INTO activation_keys (user_id, user_type, activation_key) VALUES (?, ?, ?)';
-        db.query(insertActivationKeyQuery, [user.id, user.user_type, activationKey], async (err) => {
+        // Insert the activation key into the activation_keys table with expiration time
+        const insertActivationKeyQuery = 'INSERT INTO activation_keys (user_id, user_type, activation_key, expires_at) VALUES (?, ?, ?, ?)';
+        db.query(insertActivationKeyQuery, [user.id, user.user_type, activationKey, expiresAt], async (err) => {
             if (err) {
                 console.error('Error storing activation key:', err);
                 return res.status(500).send('Error storing activation key');

@@ -97,6 +97,7 @@ const sensorTagRoutes = require('./routes/sensorTagRoutes');
 
 // Import the new cloud login routes
 const cloudLoginRoutes = require('./routes/cloudLoginRoutes');
+const cloudConnectRoutes = require('./routes/cloudConnectRoutes');
 
 // Use routes
 app.use('/api', authRoutes);
@@ -124,6 +125,7 @@ app.use('/api/sensor-tags', sensorTagRoutes);
 
 // Use the cloud login routes
 app.use('/api', cloudLoginRoutes);
+app.use('/api', cloudConnectRoutes);
 
 // Start the scheduler
 require('./scheduler');
