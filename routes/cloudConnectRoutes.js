@@ -1,6 +1,6 @@
 const express = require('express');
 const { check } = require('express-validator');
-const { cloudLogin, connectToDatabase } = require('../controllers/cloudConnect');
+const { cloudLogin, connectToDatabase } = require('../controllers/connectToDatabase');
 const router = express.Router();
 
 // Route for cloud login
