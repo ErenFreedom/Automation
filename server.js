@@ -42,7 +42,6 @@ app.use(helmet());
 // CORS configuration
 app.use(cors({
   origin: 'https://ec2-13-126-117-233.ap-south-1.compute.amazonaws.com',
-
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -96,6 +95,9 @@ const clientReportRoutes = require('./routes/clientReportRoutes');
 const clientNotificationRoutes = require('./routes/clientNotificationRoutes');
 const sensorTagRoutes = require('./routes/sensorTagRoutes');
 
+// Import the new cloud login routes
+const cloudLoginRoutes = require('./routes/cloudLoginRoutes');
+
 // Use routes
 app.use('/api', authRoutes);
 app.use('/api', authClientRoutes);
@@ -119,6 +121,9 @@ app.use('/api/client-graph-data', clientGraphRoutes);
 app.use('/api/client-report', clientReportRoutes);
 app.use('/api', clientNotificationRoutes);
 app.use('/api/sensor-tags', sensorTagRoutes);
+
+// Use the cloud login routes
+app.use('/api', cloudLoginRoutes);
 
 // Start the scheduler
 require('./scheduler');
