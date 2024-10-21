@@ -2,6 +2,7 @@ const db = require('../config/db');
 const bcrypt = require('bcrypt');
 const { validationResult } = require('express-validator');
 const nodemailer = require('nodemailer');
+const { decryptData } = require('../utils/otpGeneration'); // Assuming decryptData is the function used for decryption
 require('dotenv').config();
 
 // Generate a random 12-16 digit activation key
@@ -35,7 +36,7 @@ async function sendActivationKeyEmail(email, activationKey) {
     }
 }
 
-// Login for Cloud Connection (clients/staff)
+// Cloud Login for Staff or Clients
 exports.cloudLogin = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -43,7 +44,7 @@ exports.cloudLogin = async (req, res) => {
     }
 
     const { identifier, password } = req.body; // Identifier can be email or username
-    const decryptedPassword = password;  // Assuming password is already decrypted by frontend
+    const decryptedPassword = decryptData(password);  // Decrypting the password like your existing code
 
     // Query for both staff and clients
     const query = `
@@ -57,7 +58,7 @@ exports.cloudLogin = async (req, res) => {
         }
 
         const user = results[0];
-        const validPassword = await bcrypt.compare(decryptedPassword, user.password);
+        const validPassword = await bcrypt.compare(decryptedPassword, user.password);  // Compare decrypted password with hash
 
         if (!validPassword) {
             return res.status(401).send('Invalid credentials');
